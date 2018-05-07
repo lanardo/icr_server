@@ -1,0 +1,138 @@
+{
+	"type": "invoice",
+	"prefix":{
+		"id": "invoice1",
+		"fname": "InfotechAS.pdf",
+		"name": "InfotechAS",
+		"keywords": [
+				"InfotechAS",
+				"faktura@infotech.no"
+		]
+	},
+	"info": {
+		"InvoiceDetails": [
+			{
+				"meaning": "InvoiceNumber",
+				"keywords": [
+					"Fakturanummer",
+					"faktura nr."
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceIssueDate",
+				"keywords": [
+					"Fakturadato"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "InvoiceDueDate",
+				"keywords": [
+					"Forfallsdato", "Forfallsdata"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "TransactionID",
+				"keywords": [
+					""
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceReference",
+				"keywords": [
+					"Deres ref."
+				],
+				"orientation": "left",
+				"max_len": 10
+			},
+			{
+				"meaning": "Free Text",
+				"keywords": [
+					"Deres ref."
+				],
+				"orientation": "ext_under",
+				"max_len": 10
+			}
+		],
+		"InvoiceLines": {
+			"orientation": "under",
+			"components": [
+				{
+					"meaning": "LineID",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning" : "Quantity",
+					"keywords": [
+							"Ant."
+						]
+				},
+				{
+					"meaning": "Unit",
+					"keywords": [
+						"Enhet"
+					]
+				},
+				{
+					"meaning": "Description",
+					"keywords": [
+						"Beskrivelse"
+					]
+				},
+				{
+					"meaning": "Price",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning": "TotalLineAmount",
+					"keywords": [
+						"Beløp", "Belop", "Belep"
+					]
+				}
+			]
+		},
+		"TotalTAXs": [
+			{
+				"meaning": "25%",
+				"keywords": [
+					"+25% MVA"
+				],
+				"orientation": "left"
+			},
+			{
+				"meaning": "15%",
+				"keywords": [
+					""
+				],
+				"orientation": "left"
+			},
+			{
+				"meaning": "10%",
+				"keywords": [
+					""
+				],
+				"orientation": "left"
+			}
+		],
+		"Totals": [
+			{
+				"meaning": "TotalInclusiveTAX",
+				"keywords": [
+						"Sum NOK"
+				],
+				"orientation": "left"
+			}
+		]
+	}
+}
