@@ -6,8 +6,8 @@ root = os.path.join(os.getcwd(), os.path.dirname(__file__))
 LOG_DIR = os.path.join(root, "logs")
 
 if not os.path.isdir(LOG_DIR):
-    os.mkdir(LOG_DIR[:-1])
-log_fn = LOG_DIR + "icr.log"
+    os.mkdir(LOG_DIR)
+log_fn = LOG_DIR + "/icr.log"
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(message)s',
                     datefmt='%d/%b/%Y %H:%M:%S',

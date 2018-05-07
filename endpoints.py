@@ -12,9 +12,18 @@ from utils.invoice_utils import Invoice
 from utils.config import *
 
 if sys.version_info[0] == 3:  # python 3x
-    from utils.pdf_utils import PdfUtils
-    pdf = PdfUtils()
     import queue as qu
+
+    try:
+        from utils.settings import device
+        if device == "EC2":
+            from utils.pdf2jpg import Pdf2Jpg
+            pdf = Pdf2Jpg()
+    except Exception:
+        from utils.pdf_utils import PdfUtils
+        pdf = PdfUtils()
+        pass
+
 elif sys.version_info[0] == 2:  # python 2x
     from utils.pdf2jpg import Pdf2Jpg
     pdf = Pdf2Jpg()

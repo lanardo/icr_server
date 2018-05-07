@@ -15,9 +15,20 @@ from utils.config import *
 
 app = Flask(__name__)
 
+# predefined the location for saving the uploaded files
+UPLOAD_DIR = 'data/'
+
 
 def allowed_file(filename):
-    return '.' in filename and os.path.splitext(filename)[1].lower() in ALLOWED_EXT
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
+
+
+@app.route('/')
+def ocr():
+    """
+        initial rendering of the web interface
+    """
+    return render_template('upload.html')
 
 
 @app.route('/submit', methods=['POST'])
