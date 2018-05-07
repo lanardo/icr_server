@@ -251,12 +251,12 @@ class Invoice:
 
     def parse_invoice(self, contents):
         # recognize the template type -----------------------------------------
-        log.log_print("\t recognize the document type")
+        log.log_print("\t recognize the company...")
         template = self.recognize_template_id(content=contents[0])
 
         if template is None:  # unknown document type
-            log.log_print("\tunknown document type.\n")
-            return {'error': "unknown document type."}
+            log.log_print("\tunknown company document.\n")
+            return {'error': "unknown company docuemnt."}
         else:
             log.log_print("\t\ttemplate: {}.\n".format(template['prefix']['name']))
             invoice_details = self.get_details_infos(template=template, contents=contents)
@@ -264,6 +264,7 @@ class Invoice:
             invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
             return {
+                'company': template['prefix']['name'],
                 'invoice_details': invoice_details,
                 'invoice_lines': invoice_lines,
                 'invoice_tax': invoice_tax,
