@@ -2,8 +2,8 @@ import logging
 import sys
 import os
 
-
-LOG_DIR = "/logs/"
+root = os.path.join(os.getcwd(), os.path.dirname(__file__))
+LOG_DIR = os.path.join(root, "logs")
 
 if not os.path.isdir(LOG_DIR):
     os.mkdir(LOG_DIR[:-1])

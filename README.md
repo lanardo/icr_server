@@ -10,6 +10,9 @@ Install python library for the google cloud vision api
    or `$ sudo pip install --upgrade google-cloud-vision`
  
 ### Install the dependencies for PDF manager
+   - flask
+   `$ pip install flask`
+   
    - fuzzywazzy
    
    `$ pip install fuzzywazzy`
