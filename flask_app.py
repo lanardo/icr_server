@@ -16,11 +16,12 @@ from utils.config import *
 app = Flask(__name__)
 
 # predefined the location for saving the uploaded files
-UPLOAD_DIR = 'data/'
+cur = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(cur, 'data')
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
+    return os.path.splitext(filename)[-1].lower() in ALLOWED_EXT
 
 
 @app.route('/')
@@ -33,6 +34,8 @@ def ocr():
 
 @app.route('/submit', methods=['POST'])
 def submit():
+
+
     if len(request.files) > 0:
         file = request.files['file']
         doc_fn = secure_filename(file.filename)
@@ -43,7 +46,7 @@ def submit():
             return str
         try:
             # upload the file to the server -------------------------------------------------------
-            log.log_print("\tup invoice [{}]".format(file.filename))
+            log.log_print("\t>>>uploading invoice {}".format(file.filename))
 
             # check its directory for uploading the requested file --------------------------------
             if not os.path.isdir(UPLOAD_DIR):
@@ -62,13 +65,13 @@ def submit():
             log.log_print("\tparse the invoice [{}]".format(doc_fn))
             src_fpath = os.path.join(UPLOAD_DIR, doc_fn)
             invoice_info = endpoints.main_proc(src_file=src_fpath)
-            log.log_print("\n--- Finished1 -------------------------------------------------------")
+            log.log_print("\n>>>finished")
             return jsonify(invoice=OrderedDict(invoice_info))
 
         except Exception as e:
-            str = '\tException: {}'.format(e)
-            log.log_print("\t exception :" + str(e))
-            return str
+            error_str = '\tException: {}'.format(e)
+            log.log_print("\t exception :" + error_str)
+            return error_str
 
 
 if __name__ == '__main__':

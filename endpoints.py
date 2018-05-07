@@ -19,10 +19,13 @@ if sys.version_info[0] == 3:  # python 3x
         if device == "EC2":
             from utils.pdf2jpg import Pdf2Jpg
             pdf = Pdf2Jpg()
+        else:
+            from utils.pdf_utils import PdfUtils
+            pdf = PdfUtils()
     except Exception:
         from utils.pdf_utils import PdfUtils
         pdf = PdfUtils()
-        pass
+
 
 elif sys.version_info[0] == 2:  # python 2x
     from utils.pdf2jpg import Pdf2Jpg

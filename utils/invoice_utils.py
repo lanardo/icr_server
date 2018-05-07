@@ -256,16 +256,16 @@ class Invoice:
 
         if template is None:  # unknown document type
             log.log_print("\tunknown document type.\n")
+            return {'error': "unknown document type."}
         else:
             log.log_print("\t\ttemplate: {}.\n".format(template['prefix']['name']))
             invoice_details = self.get_details_infos(template=template, contents=contents)
             invoice_tax = self.get_tax_infos(template=template, contents=contents)
             invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
-
-        return {
-            'invoice_details': invoice_details,
-            'invoice_lines': invoice_lines,
-            'invoice_tax': invoice_tax,
-            'invoice_total': invoice_total
-        }
+            return {
+                'invoice_details': invoice_details,
+                'invoice_lines': invoice_lines,
+                'invoice_tax': invoice_tax,
+                'invoice_total': invoice_total
+            }

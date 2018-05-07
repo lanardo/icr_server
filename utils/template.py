@@ -5,10 +5,13 @@ import sys
 
 class Template:
     def __init__(self):
-        self.dataset = "./dataset/templates"
+        cur = os.path.dirname(os.path.abspath(__file__))
+        root = os.path.abspath(os.path.join(cur, os.pardir))
+
+        self.dataset = os.path.join(root, "dataset")
 
     def load(self):
-        templates_dir = self.dataset
+        templates_dir = os.path.join(self.dataset, "templates")
         if not os.path.isdir(templates_dir):
             sys.stdout.write("\tno exist dir: {}\n".format(templates_dir))
             sys.exit(1)
