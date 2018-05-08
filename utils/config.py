@@ -5,5 +5,5 @@ UPLOAD_DIR = 'data/'
 
 # endpoints
 LOG_DIR = "./logs/"
-ORIENTATIONS = ["270 Deg", "180 Deg", "90 Deg", "0 Deg(Normal )"]
+ORIENTATIONS = ["270 Deg", "180 Deg", "90 Deg", "0 Deg(Normal)"]
 

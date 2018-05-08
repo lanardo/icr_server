@@ -57,14 +57,12 @@ class Invoice:
 
                     pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
                     if pos != -1 and info['meaning'] not in ret_dict.keys():
-                        last_pos = pos + len(keyword.replace(' ', ''))
-                        value = manager.get_val(annos=annos, anno_id=anno_id,
+                        value = manager.get_val(annos=annos, keyword=keyword,
                                                 lines=lines, line_id=line_id,
-                                                cur_val_text=line_text[last_pos:],
                                                 info=info)
 
-                        keyword = info['meaning']
-                        ret_dict[keyword] = value
+                        print(info['meaning'], ":", value)
+                        ret_dict[info['meaning']] = value
                         if value != EMP:
                             break
 
@@ -118,7 +116,7 @@ class Invoice:
                         anno_text = annos[key_line[j]]['text']
                         temp_str += anno_text
                         end = j
-                        if temp_str.replace(' ','').find(main_keyword_list[k].replace(' ', '')) != -1:
+                        if temp_str.replace(' ', '').find(main_keyword_list[k].replace(' ', '')) != -1:
                             main_keyanno_list.append({
                                 'keyword': main_keyword_list[k],
                                 'left': manager.get_left_edge(annos[key_line[start]]),
@@ -132,53 +130,61 @@ class Invoice:
             # config the lines ---------------------------------------------------
             if len(main_keyanno_list) != -1:
                 value_lines = []
-                for line_id in range(key_line_pos + 1, len(lines)):
-                    line = lines[line_id]['line']
+                cnt = 0
+                while cnt < 3:
+                    for line_id in range(key_line_pos + cnt + 1, len(lines)):
+                        line = lines[line_id]['line']
 
-                    value_line = []
-                    start = 0
-                    for k in range(0, len(main_keyanno_list)):
-                        temp_str = EMP
-                        if k == 0:
-                            for i in range(start, len(line)):
-                                if manager.get_right_edge(annos[line[i]])[0] <= main_keyanno_list[k+1]['left'][0]:
-                                    temp_str += annos[line[i]]['text']
-                                else:
-                                    start = i
-                                    value_line.append(temp_str)
-                                    break
-                        elif k != len(main_keyanno_list) - 1:
-                            for i in range(start, len(line)):
-                                if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and \
-                                                manager.get_right_edge(annos[line[i]])[0] < \
-                                                main_keyanno_list[k + 1]['left'][0]:
-                                    temp_str += annos[line[i]]['text']
-                                else:
-                                    start = i
-                                    value_line.append(temp_str)
-                                    break
-                        elif k == len(main_keyanno_list) - 1:
-                            for i in range(start, len(line)):
-                                if main_keyanno_list[k-1]['right'][0] < manager.get_left_edge(annos[line[i]])[0]:
-                                    temp_str += annos[line[i]]['text']
-                            value_line.append(temp_str)
+                        value_line = []
+                        start = 0
+                        for k in range(0, len(main_keyanno_list)):
+                            temp_str = EMP
+                            if k == 0:
+                                for i in range(start, len(line)):
+                                    if manager.get_right_edge(annos[line[i]])[0] <= main_keyanno_list[k+1]['left'][0]:
+                                        temp_str += annos[line[i]]['text']
+                                    else:
+                                        start = i
+                                        value_line.append(temp_str)
+                                        break
+                            elif k != len(main_keyanno_list) - 1:
+                                for i in range(start, len(line)):
+                                    if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and \
+                                                    manager.get_right_edge(annos[line[i]])[0] < \
+                                                    main_keyanno_list[k + 1]['left'][0]:
+                                        temp_str += annos[line[i]]['text']
+                                    else:
+                                        start = i
+                                        value_line.append(temp_str)
+                                        break
+                            elif k == len(main_keyanno_list) - 1:
+                                for i in range(start, len(line)):
+                                    if main_keyanno_list[k-1]['right'][0] < manager.get_left_edge(annos[line[i]])[0]:
+                                        temp_str += annos[line[i]]['text']
+                                value_line.append(temp_str)
 
-                    num_emptys = value_line.count(EMP)
-                    if len(value_line) - num_emptys < THRESH_MIN_LINE_KEYS:
-                        break
-                    else:
-                        # init the empty contrainer for result dict
-                        filled_list = [EMP] * len(infos)
-                        for i in range(len(infos)):
-                            info = infos[i]
-                            for k in range(len(main_keyanno_list)):
-                                key_anno = main_keyanno_list[k]
-                                if key_anno['keyword'] in info['keywords']:
-                                    filled_list[i] = value_line[k]
-                                    break
+                        num_emptys = value_line.count(EMP)
+                        if len(value_line) - num_emptys < THRESH_MIN_LINE_KEYS:
+                            cnt += 1
+                            break
+                        if lines[line_id]['pos'] - lines[line_id - 1]['pos'] > manager.get_height(
+                                anno=annos[lines[key_line_pos]['line'][0]]) * 3:
+                            cnt += 3
+                            break
+                        else:
+                            cnt += 3
+                            # init the empty contrainer for result dict
+                            filled_list = [EMP] * len(infos)
+                            for i in range(len(infos)):
+                                info = infos[i]
+                                for k in range(len(main_keyanno_list)):
+                                    key_anno = main_keyanno_list[k]
+                                    if key_anno['keyword'] in info['keywords']:
+                                        filled_list[i] = value_line[k]
+                                        break
 
-                        # fillout the empty elements
-                        value_lines.append(filled_list)
+                            # fillout the empty elements
+                            value_lines.append(filled_list)
 
             total_value_lines.extend(value_lines)
         return total_value_lines
@@ -187,67 +193,78 @@ class Invoice:
         content = contents[-1]  # get total info from the last page
         annos = content['annos']
         lines = content['lines']
-        infos = template['info']['Totals']
+        totals = template['info']['Totals']
         ret_dict = {}
-        for line_id in range(len(lines)):
-            line = lines[line_id]
-            line_text = ""
-            for anno_id in line['line']:
-                line_text += annos[anno_id]['text']
 
-            for info in infos:
-                for keyword in info['keywords']:
-                    if keyword == EMP:
-                        ret_dict[info['meaning']] = EMP
-                        break
+        if totals['type'] == "list":
+            infos = totals['components']
+            orientation = totals['orientation']
+            for line_id in range(len(lines)):
+                line = lines[line_id]
+                line_text = ""
+                for anno_id in line['line']:
+                    line_text += annos[anno_id]['text']
 
-                    pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                    if pos != -1 and info['meaning'] not in ret_dict.keys():
-                        last_pos = pos + len(keyword.replace(' ', ''))
-                        value = manager.get_val(annos=annos, anno_id=anno_id,
-                                                lines=lines, line_id=line_id,
-                                                cur_val_text=line_text[last_pos:],
-                                                info=info)
-
-                        keyword = info['meaning']
-                        ret_dict[keyword] = value
-                        if value != EMP:
+                for info in infos:
+                    for keyword in info['keywords']:
+                        if keyword == EMP:
+                            ret_dict[info['meaning']] = EMP
                             break
 
-        return ret_dict
+                        info['orientation'] = orientation
+                        pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
+                        if pos != -1 and info['meaning'] not in ret_dict.keys():
+                            last_pos = pos + len(keyword.replace(' ', ''))
+                            value = manager.get_val(annos=annos, anno_id=anno_id,
+                                                    lines=lines, line_id=line_id,
+                                                    cur_val_text=line_text[last_pos:],
+                                                    info=info)
+
+                            keyword = info['meaning']
+                            ret_dict[keyword] = value
+                            if value != EMP:
+                                break
+
+            return ret_dict
 
     def get_tax_infos(self, template, contents):
         content = contents[-1]  # get total info from the last page
         annos = content['annos']
         lines = content['lines']
-        infos = template['info']['TotalTAXs']
+        taxs = template['info']['TotalTAXs']
         ret_dict = {}
-        for line_id in range(len(lines)):
-            line = lines[line_id]
-            line_text = ""
-            for anno_id in line['line']:
-                line_text += annos[anno_id]['text']
 
-            for info in infos:
-                for keyword in info['keywords']:
-                    if keyword == EMP:
-                        ret_dict[info['meaning']] = EMP
-                        break
+        if taxs['type'] == "list":
+            infos = taxs['components']
+            orientation = taxs['orientation']
 
-                    pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                    if pos != -1 and info['meaning'] not in ret_dict.keys():
-                        last_pos = pos + len(keyword.replace(' ', ''))
-                        value = manager.get_val(annos=annos, anno_id=anno_id,
-                                                lines=lines, line_id=line_id,
-                                                cur_val_text=line_text[last_pos:],
-                                                info=info)
+            for line_id in range(len(lines)):
+                line = lines[line_id]
+                line_text = ""
+                for anno_id in line['line']:
+                    line_text += annos[anno_id]['text']
 
-                        keyword = info['meaning']
-                        ret_dict[keyword] = value
-                        if value != EMP:
+                for info in infos:
+                    for keyword in info['keywords']:
+                        if keyword == EMP:
+                            ret_dict[info['meaning']] = EMP
                             break
 
-        return ret_dict
+                        info['orientation'] = orientation
+                        pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
+                        if pos != -1 and info['meaning'] not in ret_dict.keys():
+                            last_pos = pos + len(keyword.replace(' ', ''))
+                            value = manager.get_val(annos=annos, anno_id=anno_id,
+                                                    lines=lines, line_id=line_id,
+                                                    cur_val_text=line_text[last_pos:],
+                                                    info=info)
+
+                            keyword = info['meaning']
+                            ret_dict[keyword] = value
+                            if value != EMP:
+                                break
+
+            return ret_dict
 
     def parse_invoice(self, contents):
         # recognize the template type -----------------------------------------
@@ -264,6 +281,7 @@ class Invoice:
             invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
             return {
+                'company': template['prefix']['name'],
                 'invoice_details': invoice_details,
                 'invoice_lines': invoice_lines,
                 'invoice_tax': invoice_tax,
