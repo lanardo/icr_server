@@ -349,15 +349,16 @@ def get_val(annos, keyword, line_id, lines, info):
 
         dis = after_left - cur_right
         temp_str += cur['text'] + ' '
-        if dis > cur_text_height * 2:
-            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) == -1:
+        if dis >= cur_text_height:
+            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) != -1:
+                # math.fabs(len(temp_str.replace(' ', '')) - len(keyword.replace(' ', ''))) < 2.0:
+                end = i
+                break
+            else:
                 temp_str = EMP
                 start = i + 1
                 continue
-            else:
-                end = i
-                break
-        if (i + 1) == len(lines[line_id]['line']):
+        if i == len(lines[line_id]['line']) - 2:
             end = i + 1
             temp_str += after['text'] + ' '
 
@@ -396,40 +397,55 @@ def get_val(annos, keyword, line_id, lines, info):
         if value == EMP:
             next_line_id = line_id + 1
             next_line_text = EMP
-            for i in range(len(lines[next_line_id]['line']) - 1):
+            for i in range(len(lines[next_line_id]['line'])):
                 cur = annos[lines[next_line_id]['line'][i]]
                 cur_right = get_right_edge(cur)[0]
-                after = annos[lines[next_line_id]['line'][i + 1]]
-                after_left = get_left_edge(after)[0]
-                dis = after_left - cur_right
-
                 if get_left_edge(cur)[0] < left_of_key:
                     next_line_text = EMP
                     continue
 
                 next_line_text += cur['text']
-                if dis < cur_text_height * 2:
+
+                if i == len(lines[next_line_id]['line']) - 1:
                     break
+                else:
+                    after = annos[lines[next_line_id]['line'][i + 1]]
+                    after_left = get_left_edge(after)[0]
+                    dis = after_left - cur_right
+                    if dis > cur_text_height * 2:
+                        break
 
             value = next_line_text
 
     elif orientation == "under":
+        if start != 0:
+            left_edge = get_right_edge(annos[lines[line_id]['line'][start - 1]])[0]
+        else:
+            left_edge = 0
+        if end == len(lines[line_id]['line']) - 1:
+            right_edge = 10000
+        else:
+            right_edge = get_left_edge(annos[lines[line_id]['line'][end + 1]])[0]
+
         next_line_id = line_id + 1
         next_line_text = EMP
-        start = 0
-        for idx in range(len(lines[next_line_id]['line']) - 1):
-            prev_val_anno = annos[lines[next_line_id]['line'][idx]]
-            cur_val_anno = annos[lines[next_line_id]['line'][idx + 1]]
+        for i in range(len(lines[next_line_id]['line'])):
+            cur = annos[lines[next_line_id]['line'][i]]
+            cur_right = get_right_edge(cur)[0]
+            if get_left_edge(cur)[0] < left_edge or get_right_edge(cur)[0] > right_edge:
+                next_line_text = EMP
+                continue
 
-            prev_right = get_right_edge(prev_val_anno)[0]
-            cur_right = get_right_edge(cur_val_anno)[0]
-
-            if prev_right < left_of_key < cur_right:
-                start = idx + 1
+            next_line_text += cur['text']
+            if i == len(lines[next_line_id]['line']) - 1:
                 break
-        for idx in range(start, len(lines[next_line_id]['line'])):
-            val_anno = annos[lines[next_line_id]['line'][idx]]
-            next_line_text += val_anno['text']
+            else:
+                after = annos[lines[next_line_id]['line'][i + 1]]
+                after_left = get_left_edge(after)[0]
+                dis = after_left - cur_right
+                if dis > cur_text_height * 2:
+                    break
+
         value = next_line_text
 
     elif orientation == "ext_under":
@@ -442,7 +458,7 @@ def get_val(annos, keyword, line_id, lines, info):
             next_line_id = line_id + i
             next_line_pos = lines[next_line_id]['pos']
 
-            dis = next_line_pos[1] - cur_line_pos[1]
+            dis = next_line_pos - cur_line_pos
             if cur_text_height * 5 < dis or next_line_id >= len(lines) - 1:
                 break
             else:
@@ -474,7 +490,7 @@ def get_val(annos, keyword, line_id, lines, info):
     else:
         value = ""
 
-    if len(value) > max_len:
+    if len(value) >= max_len:
         return clear_value(value)
     else:
         return ""

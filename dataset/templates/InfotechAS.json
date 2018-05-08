@@ -111,22 +111,19 @@
 					"meaning": "25%",
 					"keywords": [
 						"+25% MVA"
-					],
-					"orientation": "left"
+					]
 				},
 				{
 					"meaning": "15%",
 					"keywords": [
 						""
-					],
-					"orientation": "left"
+					]
 				},
 				{
 					"meaning": "10%",
 					"keywords": [
 						""
-					],
-					"orientation": "left"
+					]
 				}
 			]
 		},
@@ -138,8 +135,7 @@
 					"meaning": "TotalInclusiveTAX",
 					"keywords": [
 						"Sum NOK"
-					],
-					"orientation": "left"
+					]
 				}
 			]
 		}

@@ -56,14 +56,14 @@ class Invoice:
                         break
 
                     pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                    if pos != -1 and info['meaning'] not in ret_dict.keys():
+                    if pos != -1 and (info['meaning'] not in ret_dict.keys() or ret_dict[info['meaning']] == EMP):
                         value = manager.get_val(annos=annos, keyword=keyword,
                                                 lines=lines, line_id=line_id,
                                                 info=info)
 
-                        print(info['meaning'], ":", value)
                         ret_dict[info['meaning']] = value
                         if value != EMP:
+                            print(info['meaning'], ":", value)
                             break
 
         return ret_dict
@@ -190,15 +190,14 @@ class Invoice:
         return total_value_lines
 
     def get_total_infos(self, template, contents):
-        content = contents[-1]  # get total info from the last page
-        annos = content['annos']
-        lines = content['lines']
         totals = template['info']['Totals']
-        ret_dict = {}
+        infos = totals['components']
+        orientation = totals['orientation']
 
-        if totals['type'] == "list":
-            infos = totals['components']
-            orientation = totals['orientation']
+        ret_dict = {}
+        for content in contents: # get total info from the last page
+            annos = content['annos']
+            lines = content['lines']
             for line_id in range(len(lines)):
                 line = lines[line_id]
                 line_text = ""
@@ -213,30 +212,30 @@ class Invoice:
 
                         info['orientation'] = orientation
                         pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                        if pos != -1 and info['meaning'] not in ret_dict.keys():
-                            last_pos = pos + len(keyword.replace(' ', ''))
-                            value = manager.get_val(annos=annos, anno_id=anno_id,
+                        if pos != -1 and (info['meaning'] not in ret_dict.keys() or ret_dict[info['meaning']] == EMP):
+                            value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,
-                                                    cur_val_text=line_text[last_pos:],
                                                     info=info)
 
-                            keyword = info['meaning']
-                            ret_dict[keyword] = value
+                            ret_dict[info['meaning']] = value
                             if value != EMP:
+                                print(info['meaning'], ":", value)
                                 break
 
+        if totals['type'] == "list":
+            return ret_dict
+        else:
             return ret_dict
 
     def get_tax_infos(self, template, contents):
-        content = contents[-1]  # get total info from the last page
-        annos = content['annos']
-        lines = content['lines']
-        taxs = template['info']['TotalTAXs']
         ret_dict = {}
 
-        if taxs['type'] == "list":
-            infos = taxs['components']
-            orientation = taxs['orientation']
+        taxs = template['info']['TotalTAXs']
+        infos = taxs['components']
+        orientation = taxs['orientation']
+        for content in contents:
+            annos = content['annos']
+            lines = content['lines']
 
             for line_id in range(len(lines)):
                 line = lines[line_id]
@@ -252,18 +251,19 @@ class Invoice:
 
                         info['orientation'] = orientation
                         pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                        if pos != -1 and info['meaning'] not in ret_dict.keys():
-                            last_pos = pos + len(keyword.replace(' ', ''))
-                            value = manager.get_val(annos=annos, anno_id=anno_id,
+                        if pos != -1 and (info['meaning'] not in ret_dict.keys() or ret_dict[info['meaning']] == EMP):
+                            value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,
-                                                    cur_val_text=line_text[last_pos:],
                                                     info=info)
 
-                            keyword = info['meaning']
-                            ret_dict[keyword] = value
+                            ret_dict[info['meaning']] = value
                             if value != EMP:
+                                print(info['meaning'], ":", value)
                                 break
 
+        if taxs['type'] == "list":
+            return ret_dict
+        elif taxs['type'] == "dict" and taxs['orientation'] == "under":
             return ret_dict
 
     def parse_invoice(self, contents):
