@@ -144,8 +144,12 @@ class VisionUtils:
             img = cv2.rotate(img, rotateCode=ori)
 
         height, width = img.shape[:2]
+        new_annos = []
         for anno in annos:
             self.__correlate_anno(anno=anno, orientation=ori, img_sz=[width, height])
+            if self.__rect_orientation(anno) == ORIENTATION_NORMAL:
+                new_annos.append(anno)
+        return new_annos
 
     def __correlate_anno(self, anno, orientation, img_sz):
         img_width, img_height = img_sz
@@ -217,11 +221,11 @@ class VisionUtils:
 
                     # recognize the orientation
                     orientation = self.__get_orientation(annos=annos)
-                    self.__correlate_orientation(annos=annos, ori=orientation, img=img)
+                    annos = self.__correlate_orientation(annos=annos, ori=orientation, img=img)
 
                     if self.debug:  # display the line rect
                         for i in range(len(annos)):
-                            for j in range(3):
+                            for j in range(-1, 3):
                                 pt0 = annos[i]['boundingBox']['vertices'][j]
                                 pt1 = annos[i]['boundingBox']['vertices'][j + 1]
                                 cv2.line(img, (pt0['x'], pt0['y']), (pt1['x'], pt1['y']), (255, 0, 0), 1)

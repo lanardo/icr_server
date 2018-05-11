@@ -133,12 +133,13 @@ class Invoice:
                         description_id = k
                         break
 
-                img = content['image']
-                for key_anno in main_keyanno_list:
-                    pt1 = key_anno['left']
-                    pt2 = key_anno['right']
-                    cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 255, 255), 10)
-                cv2.imwrite("line_1.jpg", img)
+                if self.debug:
+                    img = content['image']
+                    for key_anno in main_keyanno_list:
+                        pt1 = key_anno['left']
+                        pt2 = key_anno['right']
+                        img = cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 0, 255), 10)
+                    content['image'] = img
 
             # --- filter the wrong parsed line from the lines
             filtered_lines = []

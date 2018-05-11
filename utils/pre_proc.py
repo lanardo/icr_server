@@ -59,9 +59,9 @@ class PreProc:
             image = content['image']
             for anno in content['annos']:
                 points = anno['boundingBox']['vertices']
-                for i in range(len(points) - 1):
+                for i in range(0, 3):
                     image = cv2.line(image, (points[i]['x'], points[i]['y']), (points[i + 1]['x'], points[i + 1]['y']),
-                                     (255, 0, 0), 1)
+                                     (200, 0, 0), 2)
             content['image'] = image
 
     def align(self, content):
