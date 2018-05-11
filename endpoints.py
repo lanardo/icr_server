@@ -33,7 +33,7 @@ elif sys.version_info[0] == 2:  # python 2x
     import Queue as qu
 
 
-vis = VisionUtils(debug=False)
+vis = VisionUtils(debug=True)
 pre = PreProc(debug=False)
 inv = Invoice(debug=True)
 
@@ -110,6 +110,7 @@ def save_temp_images(content):
 
 if __name__ == '__main__':
 
-    path = "./dataset/samples/BravidaAS/201604040012006.TIF.PDF"
-    # path = "./dataset/samples/InfotechAS/20160408070011.TIF.PDF"
+    # path = "./data/201604040011007.TIF-1.jpg"
+    # main_proc(path, debug=True)
+    path = "./data/201604040012006.TIF.PDF"
     main_proc(path)

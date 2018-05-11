@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import logger as log
 from utils.text_annos_manage import *
+import sys
 
 
 class PreProc:
@@ -26,9 +27,6 @@ class PreProc:
         y0 = points[0]['y']
 
         if x0 < centerX and y0 < centerY:
-            """ 0 --------- 1
-                |           |
-                3 --------- 2 """
             angle = 0.0
             for i in range(4):
                 dx = points[(i + 1) % 4]['x'] - points[i]['x']
@@ -53,15 +51,11 @@ class PreProc:
         self.config_lines(content=content)
 
         if self.debug:
-            annos = content['annos']
-            lines = content['lines']
-            print("lines:")
-            for line in lines:
-                print()
-                for anno_id in line['line']:
-                    import sys
-                    sys.stdout.write(' ' + annos[anno_id]['text'])
+            sys.stdout.write("\tlines:\n")
+            for line in content['lines']:
+                sys.stdout.write("\t\t{}\n".format(line['text']))
 
+            # draw rectangle of the annotation
             image = content['image']
             for anno in content['annos']:
                 points = anno['boundingBox']['vertices']

@@ -276,9 +276,18 @@ def bundle_to_lines(origin_annos):
 
         line.extend(__left_extends(id, annos)[:])
         line.extend(__right_extends(id, annos)[1:])
+
+        str_temp = ""
         for anno_id in line:
+            str_temp += annos[anno_id]['text']
+
+        idx = 0
+        while idx < len(line):
+            anno_id = line[idx]
             if anno_id not in annos_ids:
                 line.remove(anno_id)
+            else:
+                idx += 1
 
         lines.append(line)
 
@@ -296,9 +305,13 @@ def bundle_to_lines(origin_annos):
         fst_anno_pos = annos[line[0]]['boundingBox']['vertices']
         line_pos = (fst_anno_pos[0]['y'] + fst_anno_pos[3]['y']) / 2
 
-        temp_lines.append({'line': line, 'pos': line_pos})
+        line_text = ""
+        for anno_id in line:
+            line_text += annos[anno_id]['text'] + ' '
+        temp_lines.append({'line': line, 'pos': line_pos, 'text': line_text})
 
     sorted_lines = sorted(temp_lines, key=itemgetter('pos'))
+
     return sorted_lines
 
 
