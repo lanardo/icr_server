@@ -528,3 +528,35 @@ def is_candi_line(text):
     digits = re.findall('\d+', text)
     alphabets = " ".join(re.findall("[a-zA-Z]+", text))
     return (len(digits) + len(alphabets)) != 0
+
+
+def str2val(word):
+    if word == EMP:
+        return -1
+    else:
+        word = word.replace(' ', '')
+        word = word.replace(',', '.')
+        try:
+            val = float(word)
+            return val
+        except Exception as e:
+            print(e)
+            return -1
+
+
+def autofill_product_line(value_list, indexs):
+    idx_quantity, idx_price, idx_total = indexs
+    if idx_quantity is None or idx_price is None or idx_total is None:
+        return
+    qua = str2val(value_list[idx_quantity])
+    price = str2val(value_list[idx_price])
+    total = str2val(value_list[idx_total])
+
+    if qua == -1 and price != -1 and total != -1:
+        value_list[idx_quantity] = "{:.1f}".format(total / price)
+    if qua != -1 and price == -1 and total != -1:
+        value_list[idx_price] = "{:.2f}".format(total / qua)
+    if qua != -1 and price != -1 and total == -1:
+        value_list[idx_total] = "{:.2f}".format(qua * price)
+
+    return value_list

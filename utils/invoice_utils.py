@@ -227,20 +227,30 @@ class Invoice:
 
             # --- fillout the value line with order of components
             if len(value_lines) != -1:
+                for component in components:
+                    if component['meaning'] == "Quantity":
+                        idx_qantity = components.index(component)
+                    elif component['meaning'] == "Price":
+                        idx_price = components.index(component)
+                    elif component['meaning'] == "TotalLineAmount":
+                        idx_totalline = components.index(component)
+
                 filled_lines = []
                 for value_line in value_lines:
                     # init the empty contrainer for result dict
-                    filled_list = [EMP] * len(components)
-                    filled_list[0] = str(value_lines.index(value_line))
+                    filled_line = [EMP] * len(components)
+                    filled_line[0] = str(value_lines.index(value_line))
 
                     for i in range(len(components)):
                         component = components[i]
                         for k in range(len(main_keyanno_list)):
                             key_anno = main_keyanno_list[k]
                             if key_anno['keyword'] in component['keywords']:
-                                filled_list[i] = value_line[k]
+                                filled_line[i] = value_line[k]
                                 break
-                    filled_lines.append(filled_list)
+
+                    filled_line = manager.autofill_product_line(filled_line, [idx_qantity, idx_price, idx_totalline])
+                    filled_lines.append(filled_line)
 
                 total_value_lines.extend(filled_lines)
 
