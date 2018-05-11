@@ -360,9 +360,9 @@ def get_val(annos, keyword, line_id, lines, info):
 
         dis = after_left - cur_right
         temp_str += cur['text'] + ' '
-        if dis >= cur_text_height:
-            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) != -1:
-                # math.fabs(len(temp_str.replace(' ', '')) - len(keyword.replace(' ', ''))) < 2.0:
+        if dis >= cur_text_height * 0.7:
+            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) != -1 and\
+                            math.fabs(len(temp_str.replace(' ', '')) - len(keyword.replace(' ', ''))) < 2.0:
                 end = i
                 break
             else:

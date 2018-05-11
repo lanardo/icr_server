@@ -109,9 +109,8 @@ def save_temp_images(content):
 
 
 if __name__ == '__main__':
-    # path = "./data/201604040012006.TIF-1.jpg"
-
-
+    path = "./data/201604040012006.TIF-1.jpg"
+    main_proc(path)
     path = "./data/201604040011007.TIF.PDF"
     main_proc(path)
     path = "./data/201604040011014.TIF.PDF"

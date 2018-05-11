@@ -306,7 +306,7 @@ class Invoice:
                         if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
                             value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,
-                                                    info=component)
+                                                        info=component)
 
                             ret_dict[component['meaning']] = value
                             # if value != EMP:
