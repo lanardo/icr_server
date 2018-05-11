@@ -80,12 +80,7 @@ class Invoice:
             key_line_pos = -1
             for line_id in range(len(lines)):
                 line = lines[line_id]
-                line_text = ""
-                for anno_id in line['line']:
-                    line_text += annos[anno_id]['text']
-
-                print(line_text)
-                line_text = line_text.replace(' ', '')
+                line_text = line['text'].replace(' ', '')
 
                 key_list = []
                 find_pos = -1
@@ -122,7 +117,7 @@ class Invoice:
                             main_keyanno_list.append({
                                 'keyword': main_keyword_list[k],
                                 'left': manager.get_left_edge(annos[key_line[start]]),
-                                'right': manager.get_left_edge(annos[key_line[end]])
+                                'right': manager.get_right_edge(annos[key_line[end]])
                             })
                             k += 1
                             start = end + 1
@@ -141,6 +136,14 @@ class Invoice:
                     if key_anno['keyword'] in description_keywords:
                         description_id = k
                         break
+
+            import cv2
+            img = content['image']
+            for key_anno in main_keyanno_list:
+                pt1 = key_anno['left']
+                pt2 = key_anno['right']
+                cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 255, 255), 10)
+            cv2.imwrite("line_1.jpg", img)
 
             # --- filter the wrong parsed line from the lines
             filtered_lines = []
@@ -248,9 +251,7 @@ class Invoice:
             lines = content['lines']
             for line_id in range(len(lines)):
                 line = lines[line_id]
-                line_text = ""
-                for anno_id in line['line']:
-                    line_text += annos[anno_id]['text']
+                line_text = line['text']
 
                 for component in components:
                     for keyword in component['keywords']:
@@ -261,8 +262,6 @@ class Invoice:
                         component['orientation'] = orientation
                         pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
                         if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
-                            # print(line_text)
-                            # print(keyword)
                             value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,
                                                     info=component)
@@ -289,9 +288,7 @@ class Invoice:
 
             for line_id in range(len(lines)):
                 line = lines[line_id]
-                line_text = ""
-                for anno_id in line['line']:
-                    line_text += annos[anno_id]['text']
+                line_text = line['text']
 
                 for component in components:
                     for keyword in component['keywords']:
@@ -337,3 +334,7 @@ class Invoice:
                 # 'invoice_tax': invoice_tax,
                 # 'invoice_total': invoice_total
             }
+
+
+# ['', '1510727', 'STIKK.RS1091PTP.HVIT', '', 'STK', '65,06', '325,31'],
+# ['', '5100', 'ELEKTRIKER', '5.5', 'TIM', '515,002', '832,50']
