@@ -104,16 +104,15 @@ def __get_left_neighbor(src_anno_id, annos):
         left_cen_pt = {'x': (ul['x'] + ur['x'] + br['x'] + bl['x']) / 4,
                        'y': (ul['y'] + ur['y'] + br['y'] + bl['y']) / 4}
 
+        distance = src_left_pt['x'] - left_r_pt['x']
         if left_cen_pt['x'] <= src_left_pt['x'] <= left_r_pt['x']:
             distance = 0.0
-        else:
-            distance = src_left_pt['x'] - left_r_pt['x']
 
-            if distance >= 0 and is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id],
-                                                                                                 annos[id]):
-                    if min_left_id is None or min_left_dis > distance:  # find the minimum distance
-                        min_left_id = id
-                        min_left_dis = distance
+        if distance >= 0 and \
+                is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id], annos[id]):
+            if min_left_id is None or min_left_dis > distance:  # find the minimum distance
+                min_left_id = id
+                min_left_dis = distance
 
     return min_left_id, min_left_dis
 
@@ -136,10 +135,9 @@ def __get_right_neighbor(src_anno_id, annos):
         right_l_pt = {'x': (ul['x'] + bl['x']) / 2,
                       'y': (ul['y'] + bl['y']) / 2}
 
+        distance = right_l_pt['x'] - src_right_pt['x']
         if right_l_pt['x'] <= src_right_pt['x'] <= right_cen_pt['x']:
             distance = 0.0
-        else:
-            distance = right_l_pt['x'] - src_right_pt['x']
 
         if distance >= 0 and \
                 is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id], annos[id]):

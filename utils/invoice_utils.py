@@ -1,11 +1,10 @@
 import sys
 import base64
-import cv2
 import copy
 import utils.text_annos_manage as manager
 from utils.template import Template
-from utils.string_manage import *
 import logger as log
+import cv2
 
 
 EMP = ""
@@ -137,13 +136,12 @@ class Invoice:
                         description_id = k
                         break
 
-            import cv2
-            img = content['image']
-            for key_anno in main_keyanno_list:
-                pt1 = key_anno['left']
-                pt2 = key_anno['right']
-                cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 255, 255), 10)
-            cv2.imwrite("line_1.jpg", img)
+                img = content['image']
+                for key_anno in main_keyanno_list:
+                    pt1 = key_anno['left']
+                    pt2 = key_anno['right']
+                    cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 255, 255), 10)
+                cv2.imwrite("line_1.jpg", img)
 
             # --- filter the wrong parsed line from the lines
             filtered_lines = []
