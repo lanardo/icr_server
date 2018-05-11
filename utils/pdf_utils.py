@@ -43,7 +43,6 @@ class PdfUtils:
         trail, fname = os.path.split(pdf_path)
         base, ext = os.path.splitext(fname)
         file_type = ext[1:].upper()
-
         if file_type in ["PDF"]:  # pdf
             page_imgs = self.__pdf2imgs_wand(pdf_path)
             paths = []
@@ -53,7 +52,7 @@ class PdfUtils:
                 cv2.imwrite(img_path, img)
                 paths.append(img_path)
 
-            log.log_print("\tpages: # {}".format(len(paths)))
+            log.log_print("\t pages: # {}".format(len(paths)))
             return paths
 
         else:  # not yet

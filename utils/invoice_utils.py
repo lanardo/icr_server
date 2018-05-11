@@ -5,6 +5,7 @@ import utils.text_annos_manage as manager
 from utils.template import Template
 import logger as log
 import cv2
+import re
 
 
 EMP = ""
@@ -59,11 +60,7 @@ class Invoice:
                         value = manager.get_val(annos=annos, keyword=keyword,
                                                 lines=lines, line_id=line_id,
                                                 info=component)
-
                         ret_dict[component['meaning']] = value
-                        if value != EMP:
-                            print(component['meaning'], ":", value)
-                            break
 
         return ret_dict
 
@@ -156,6 +153,10 @@ class Invoice:
                         prev_line = filtered_lines[-1]
                         dis = cur_line['pos'] - prev_line['pos']
 
+                    if not manager.is_candi_line(cur_line['text']):
+                        line_id += 1
+                        continue
+
                     if dis < manager.get_height(annos[lines[key_line_pos]['line'][0]]):
                         if cur_line['text'].replace(' ', '').find(prev_line['text'].replace(' ', '')) != -1:
                             del filtered_lines[-1]
@@ -184,7 +185,7 @@ class Invoice:
                         if k == 0:
                             for i in range(start, len(line)):
                                 if manager.get_right_edge(annos[line[i]])[0] <= main_keyanno_list[k+1]['left'][0]:
-                                    temp_str += annos[line[i]]['text']
+                                    temp_str += annos[line[i]]['text'] + ' '
                                 else:
                                     start = i
                                     value_line.append(temp_str)
@@ -192,9 +193,14 @@ class Invoice:
                         elif k != len(main_keyanno_list) - 1:
                             for i in range(start, len(line)):
                                 if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and \
-                                                manager.get_right_edge(annos[line[i]])[0] < \
-                                                main_keyanno_list[k + 1]['left'][0]:
-                                    temp_str += annos[line[i]]['text']
+                                                manager.get_right_edge(annos[line[i]])[0] < main_keyanno_list[k + 1]['left'][0]:
+                                    if i != len(line) - 1 and manager.distance_anno2anno(left=annos[line[i]], right=annos[line[i + 1]]) < 3 * manager.get_height(annos[lines[key_line_pos]['line'][0]]):
+                                        temp_str += annos[line[i]]['text'] + ' '
+                                    else:
+                                        temp_str += annos[line[i]]['text'] + ' '
+                                        value_line.append(temp_str)
+                                        start = i + 1
+                                        break
                                 else:
                                     start = i
                                     value_line.append(temp_str)
@@ -202,7 +208,7 @@ class Invoice:
                         elif k == len(main_keyanno_list) - 1:
                             for i in range(start, len(line)):
                                 if main_keyanno_list[k-1]['right'][0] < manager.get_left_edge(annos[line[i]])[0]:
-                                    temp_str += annos[line[i]]['text']
+                                    temp_str += annos[line[i]]['text'] + ' '
                             value_line.append(temp_str)
 
                     num_emptys = value_line.count(EMP)
@@ -224,6 +230,7 @@ class Invoice:
                 for value_line in value_lines:
                     # init the empty contrainer for result dict
                     filled_list = [EMP] * len(components)
+                    filled_list[0] = str(value_lines.index(value_line))
 
                     for i in range(len(components)):
                         component = components[i]
@@ -265,9 +272,9 @@ class Invoice:
                                                     info=component)
 
                             ret_dict[component['meaning']] = value
-                            if value != EMP:
-                                print(component['meaning'], ":", value)
-                                break
+                            # if value != EMP:
+                            #     print(component['meaning'], ":", value)
+                            #     break
 
         if totals['type'] == "list":
             return ret_dict
@@ -302,9 +309,9 @@ class Invoice:
                                                     info=component)
 
                             ret_dict[component['meaning']] = value
-                            if value != EMP:
-                                print(component['meaning'], ":", value)
-                                break
+                            # if value != EMP:
+                            #     print(component['meaning'], ":", value)
+                            #     break
 
         if taxs['type'] == "list":
             return ret_dict
@@ -321,18 +328,45 @@ class Invoice:
             return {'error': "unknown document type."}
         else:
             log.log_print("\t\ttemplate: {}.\n".format(template['prefix']['name']))
-            # invoice_details = self.get_details_infos(template=template, contents=contents)
-            # invoice_tax = self.get_tax_infos(template=template, contents=contents)
-            # invoice_total = self.get_total_infos(template=template, contents=contents)
+            invoice_details = self.get_details_infos(template=template, contents=contents)
+            invoice_tax = self.get_tax_infos(template=template, contents=contents)
+            invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
+
+            if self.debug and True:
+                print(">>> company:")
+                print(template['prefix']['name'])
+
+                print(">>> invoice_details:")
+                for key in invoice_details.keys():
+                    print("\t", key, ":", invoice_details[key])
+
+                print(">>> invoice_lines:")
+                for invoice_line in invoice_lines:
+                    print("\t", invoice_line)
+
+                print(">>> invoice_tax:")
+                for key in invoice_tax.keys():
+                    print("\t", key, ":", invoice_tax[key])
+
+                print(">>> invoice_totals:")
+                for key in invoice_total.keys():
+                    print("\t", key, ":", invoice_total[key])
+
             return {
                 'company': template['prefix']['name'],
-                # 'invoice_details': invoice_details,
+                'invoice_details': invoice_details,
                 'invoice_lines': invoice_lines,
-                # 'invoice_tax': invoice_tax,
-                # 'invoice_total': invoice_total
+                'invoice_tax': invoice_tax,
+                'invoice_total': invoice_total
             }
 
 
 # ['', '1510727', 'STIKK.RS1091PTP.HVIT', '', 'STK', '65,06', '325,31'],
 # ['', '5100', 'ELEKTRIKER', '5.5', 'TIM', '515,002', '832,50']
+
+# ['', 'BV ',   'IDS784 4932036 PA3510E08 THERMOZONE ', '', 'STK ', '17 222 , 68 ',   '34 445 . 36 ']
+# ['', 'BV ',   'IDS784 8502585 SIREACY SIRE REGULER ', '', 'STK ', '2 105 , 00 ',    '4 210 , 00 '],
+# ['', 'BV ',   'SER 156 FRAKT ',                     '',   'STK ', '601 , 86 ',      '601 , 86 '],
+# ['', '4100 ', 'LÆRLING ',                           '',   'TIM ', '390 , 00 ',      '20 670 , 00 '],
+# ['', '5100 ', 'ELEKTRIKER ',                        '',   'TIM ', '515 , 00 ',      '26 265 , 00 ']

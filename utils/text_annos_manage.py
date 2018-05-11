@@ -522,3 +522,9 @@ def clear_value(str_value):
         if ch in str_value:
             str_value = str_value.replace(ch, '')
     return str_value
+
+
+def is_candi_line(text):
+    digits = re.findall('\d+', text)
+    alphabets = " ".join(re.findall("[a-zA-Z]+", text))
+    return (len(digits) + len(alphabets)) != 0

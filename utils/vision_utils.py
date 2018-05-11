@@ -108,7 +108,7 @@ class VisionUtils:
         for anno in annos:
             ori = self.__rect_orientation(anno=anno)
             oris[ori] += 1
-        print(oris)
+        # print(oris)
         return oris.index(max(oris))
 
     def __rect_orientation(self, anno):
@@ -178,7 +178,8 @@ class VisionUtils:
     def detect_text(self, path, idx, proc_queue):
         try:
             img = load_image(path)
-            log.log_print("\t send request" + path)
+            if self.debug:
+                log.log_print("\t send request" + path)
 
             response = self.__get_response(self.__make_request(cv_img=img, feature_types=['DOCUMENT_TEXT_DETECTION',
                                                                                           'TEXT_DETECTION',
@@ -235,6 +236,7 @@ class VisionUtils:
                               'total_text': annotations[0]['description']}
 
             proc_queue.put(result, True, 1)
-            log.log_print("\t receive response " + path)
+            if self.debug:
+                log.log_print("\t receive response " + path)
         except (qu.Empty, qu.Full) as e:
             log.log_print("\t Exceoption " + str(e))

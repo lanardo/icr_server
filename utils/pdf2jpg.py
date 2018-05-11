@@ -34,7 +34,7 @@ class Pdf2Jpg:
 
         if file_type in ["PDF"]:
             page_imgs = self.__pdf2imgs_ppm(pdf_path)
-            log.log_print("\tpages: # {}".format(len(page_imgs)))
+            log.log_print("\t pages: # {}".format(len(page_imgs)))
             return page_imgs
         else:  # not yet
             log.log_print("Not defined file type.")

@@ -33,19 +33,19 @@ elif sys.version_info[0] == 2:  # python 2x
     import Queue as qu
 
 
-vis = VisionUtils(debug=True)
+vis = VisionUtils(debug=False)
 pre = PreProc(debug=False)
 inv = Invoice(debug=True)
 
 
-def main_proc(src_file, debug=True):
+def main_proc(src_file, debug=False):
 
     if not os.path.exists(src_file):
         log.log_print("\t no exist such file! {}\n".format(src_file))
         sys.exit(1)
 
     # convert pdf to page images ----------------------------------------------------
-    log.log_print("\t==={}".format(src_file))
+    log.log_print("\n==={}".format(src_file))
 
     log.log_print("\tpdf to imgs...")
     page_img_paths = pdf.doc2imgs(doc_path=src_file)
@@ -57,7 +57,8 @@ def main_proc(src_file, debug=True):
     while page_contents_queue.qsize() == 0:
         # start the multi requests
         for path in page_img_paths:
-            log.log_print("\tpage No: {}".format(page_img_paths.index(path) + 1))
+            if debug:
+                log.log_print("\tpage No: {}".format(page_img_paths.index(path) + 1))
             # detect the text from the image
             idx = page_img_paths.index(path)
             thread = thr.Thread(target=vis.detect_text, args=(path, idx, page_contents_queue))
@@ -73,8 +74,7 @@ def main_proc(src_file, debug=True):
             break
 
     # parsing the invoice  -------------------------------------------------------------
-    log.log_print("\tpage contents...")
-    log.log_print("\t #contents: {}".format(page_contents_queue.qsize()))
+    log.log_print("\t # contents: {}".format(page_contents_queue.qsize()))
     contents = []
     while page_contents_queue.qsize() > 0:
         content = page_contents_queue.get(True, 1)
@@ -112,6 +112,7 @@ if __name__ == '__main__':
     # path = "./data/201604040012006.TIF-1.jpg"
 
 
-    # path = "./data/201604040011007.TIF-1.jpg"
-    path = "./data/201604040011014.TIF-1.jpg"
+    path = "./data/201604040011007.TIF.PDF"
+    main_proc(path)
+    path = "./data/201604040011014.TIF.PDF"
     main_proc(path)
