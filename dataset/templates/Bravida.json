@@ -1,0 +1,198 @@
+{
+	"type": "invoice",
+	"prefix": {
+		"id": "invoice2",
+		"fname": "Bravida.pdf",
+		"name": "BravidaAS",
+		"keywords": [
+			"bravida","Bravida",
+			"Bravida Norge AS"
+		]
+	},
+	"info": {
+		"InvoiceDetails": [
+			{
+				"meaning": "InvoiceNumber",
+				"keywords": [
+					"Fakturanummer"
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceIssueDate",
+				"keywords": [
+					"Fakturadato", "Dato"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "InvoiceDueDate",
+				"keywords": [
+					"Forfallsdato",
+					"Forfallsdata"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "TransactionID",
+				"keywords": [
+					"KID-nummer", "KID nummer"
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "PO Nnumber",
+				"keywords": [
+					""
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceReference",
+				"keywords": [
+					"Vår referanse",
+					"Var referanse"
+				],
+				"orientation": "left",
+				"max_len": 10
+			},
+			{
+				"meaning": "OrderNumber",
+				"keywords": [
+					"Deres ordre"
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "OrderReference",
+				"keywords": [
+					"Bestiller"
+				],
+				"orientation": "left",
+				"max_len": 10
+			},
+			{
+				"meaning": "Free Text",
+				"keywords": [
+					"Netto beløp",
+					"Netto belop",
+					"Netto belep"
+				],
+				"orientation": "ext_upper",
+				"max_len": 10
+			}
+		],
+		"InvoiceLines": {
+			"type": "dict",
+			"orientation": "under",
+			"components": [
+				{
+					"meaning": "LineID",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning": "LineItemID",
+					"keywords": [
+						"ArtikkelNr.",
+						"ArtikkelNr"
+					]
+				},
+				{
+					"meaning": "Description",
+					"keywords": [
+						"Artikkel Beskrivelse"
+					]
+				},
+				{
+					"meaning": "Quantity",
+					"keywords": [
+						"Antall"
+					]
+				},
+				{
+					"meaning": "Unit",
+					"keywords": [
+						"Enhet"
+					]
+				},
+				{
+					"meaning": "Price",
+					"keywords": [
+						"Enhetspris"
+					]
+				},
+				{
+					"meaning": "TotalLineAmount",
+					"keywords": [
+						"Beløp",
+						"Belop",
+						"Belep"
+					]
+				}
+			]
+		},
+		"TotalTAXs": {
+			"type": "dict",
+			"orientation": "under",
+			"components": [
+				{
+					"meaning": "TaxValue",
+					"keywords": [
+						"Mva beløp",
+						"Mva belop",
+						"Mva belep"
+					]
+				},
+				{
+					"meaning": "TaxType",
+					"keywords": [
+						"Mva"
+					],
+					"description": [
+						"25.00%",
+						"15.00%",
+						"10.00%"
+					]
+				}
+			]
+		},
+		"Totals": {
+			"type": "dict",
+			"orientation": "under",
+			"components": [
+				{
+					"meaning": "TotalExclusiveTAX",
+					"keywords": [
+						"Mva grunnlag"
+					]
+				},
+				{
+					"meaning": "Rounding",
+					"keywords": [
+                        "preavrunding",
+						"Øreavrunding",
+						"Oreavrunding"
+					]
+				},
+				{
+					"meaning": "TotalInclusiveTAX",
+					"keywords": [
+						"NOK Å betale", "NOK A betale",
+						"Å betale", "betale"
+					]
+				}
+			]
+		}
+
+
+
+	}
+}

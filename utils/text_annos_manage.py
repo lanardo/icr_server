@@ -49,7 +49,7 @@ def distance_anno2anno(left, right):
 def is_same_line(src_anno, dst_anno):
     src_rect = src_anno['boundingBox']['vertices']
     src_ul, src_ur, src_br, src_bl = src_rect
-    src_height = (src_bl['y'] - src_ul['y'] + src_br['y'] - src_ur['y']) / 2
+    src_height = get_height(anno=src_anno)
     src_cen_pt = {'x': (src_ul['x'] + src_ur['x'] + src_br['x'] + src_bl['x']) / 4,
                   'y': (src_ul['y'] + src_ur['y'] + src_br['y'] + src_bl['y']) / 4}
 
@@ -69,14 +69,9 @@ def is_same_line(src_anno, dst_anno):
 
 
 def is_same_font_sz(src_anno, dst_anno):
-    src_rect = src_anno['boundingBox']['vertices']
-    src_ul, src_ur, src_br, src_bl = src_rect
-    src_height = (src_bl['y'] - src_ul['y'] + src_br['y'] - src_ur['y']) / 2
-    
-    dst_rect = dst_anno['boundingBox']['vertices']
-    ul, ur, br, bl = dst_rect
-    height = (bl['y'] - ul['y'] + br['y'] - ur['y']) / 2
+    src_height = get_height(anno=src_anno)
 
+    height = get_height(anno=dst_anno)
     if float(src_height / 2 + height / 2) == 0:
         return False
     
@@ -109,16 +104,15 @@ def __get_left_neighbor(src_anno_id, annos):
         left_cen_pt = {'x': (ul['x'] + ur['x'] + br['x'] + bl['x']) / 4,
                        'y': (ul['y'] + ur['y'] + br['y'] + bl['y']) / 4}
 
+        distance = src_left_pt['x'] - left_r_pt['x']
         if left_cen_pt['x'] <= src_left_pt['x'] <= left_r_pt['x']:
             distance = 0.0
-        else:
-            distance = src_left_pt['x'] - left_r_pt['x']
 
-            if distance >= 0 and is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id],
-                                                                                                 annos[id]):
-                    if min_left_id is None or min_left_dis > distance:  # find the minimum distance
-                        min_left_id = id
-                        min_left_dis = distance
+        if distance >= 0 and \
+                is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id], annos[id]):
+            if min_left_id is None or min_left_dis > distance:  # find the minimum distance
+                min_left_id = id
+                min_left_dis = distance
 
     return min_left_id, min_left_dis
 
@@ -141,10 +135,9 @@ def __get_right_neighbor(src_anno_id, annos):
         right_l_pt = {'x': (ul['x'] + bl['x']) / 2,
                       'y': (ul['y'] + bl['y']) / 2}
 
+        distance = right_l_pt['x'] - src_right_pt['x']
         if right_l_pt['x'] <= src_right_pt['x'] <= right_cen_pt['x']:
             distance = 0.0
-        else:
-            distance = right_l_pt['x'] - src_right_pt['x']
 
         if distance >= 0 and \
                 is_same_line(annos[src_anno_id], annos[id]) and is_same_font_sz(annos[src_anno_id], annos[id]):
@@ -281,9 +274,18 @@ def bundle_to_lines(origin_annos):
 
         line.extend(__left_extends(id, annos)[:])
         line.extend(__right_extends(id, annos)[1:])
+
+        str_temp = ""
         for anno_id in line:
+            str_temp += annos[anno_id]['text']
+
+        idx = 0
+        while idx < len(line):
+            anno_id = line[idx]
             if anno_id not in annos_ids:
                 line.remove(anno_id)
+            else:
+                idx += 1
 
         lines.append(line)
 
@@ -301,9 +303,13 @@ def bundle_to_lines(origin_annos):
         fst_anno_pos = annos[line[0]]['boundingBox']['vertices']
         line_pos = (fst_anno_pos[0]['y'] + fst_anno_pos[3]['y']) / 2
 
-        temp_lines.append({'line': line, 'pos': line_pos})
+        line_text = ""
+        for anno_id in line:
+            line_text += annos[anno_id]['text'] + ' '
+        temp_lines.append({'line': line, 'pos': line_pos, 'text': line_text})
 
     sorted_lines = sorted(temp_lines, key=itemgetter('pos'))
+
     return sorted_lines
 
 
@@ -331,7 +337,7 @@ def get_right_edge(anno):
             (anno['boundingBox']['vertices'][1]['y'] + anno['boundingBox']['vertices'][2]['y']) / 2]
 
 
-def get_val(annos, anno_id, line_id, lines, cur_val_text, info):
+def get_val(annos, keyword, line_id, lines, info):
     if 'orientation' not in info.keys():
         orientation = 'left'
     else:
@@ -341,55 +347,184 @@ def get_val(annos, anno_id, line_id, lines, cur_val_text, info):
     else:
         max_len = info['max_len']
 
-    right_of_key = get_left_edge(annos[anno_id])[0]
-    left_of_key = get_right_edge(annos[anno_id])[0]
+    # identify the position of keyword
+    cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
+    temp_str = EMP
+    start = 0
+    end = 0
+    for i in range(len(lines[line_id]['line']) - 1):
+        cur = annos[lines[line_id]['line'][i]]
+        cur_right = get_right_edge(cur)[0]
+        after = annos[lines[line_id]['line'][i + 1]]
+        after_left = get_left_edge(after)[0]
+
+        dis = after_left - cur_right
+        temp_str += cur['text'] + ' '
+        if dis >= cur_text_height * 0.7:
+            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) != -1 and\
+                            math.fabs(len(temp_str.replace(' ', '')) - len(keyword.replace(' ', ''))) < 2.0:
+                end = i
+                break
+            else:
+                temp_str = EMP
+                start = i + 1
+                continue
+        if i == len(lines[line_id]['line']) - 2:
+            end = i + 1
+            temp_str += after['text'] + ' '
+
+    right_of_key = get_left_edge(annos[lines[line_id]['line'][start]])[0]
+    left_of_key = get_right_edge(annos[lines[line_id]['line'][end]])[0]
 
     if orientation == "left":
-        if len(cur_val_text) > max_len:
-            value = cur_val_text
-        else:
+        value = EMP
+        if end < len(lines[line_id]['line']) - 1:
+            end_key = annos[lines[line_id]['line'][end]]
+            start_val = annos[lines[line_id]['line'][end + 1]]
+            end_dis = get_left_edge(start_val)[0] - get_right_edge(end_key)[0]
+
+            val_str = EMP
+            val_width = 0
+            for i in range(end + 1, len(lines[line_id]['line'])):
+                cur = annos[lines[line_id]['line'][i-1]]
+                cur_right = get_right_edge(cur)[0]
+                after = annos[lines[line_id]['line'][i]]
+                after_left = get_left_edge(after)[0]
+
+                dis = after_left - cur_right
+                if val_str == EMP or dis < cur_text_height * 2:
+                    val_str += after['text'] + ' '
+                    val_width += get_width(after)
+                    if dis < cur_text_height * 2:
+                        val_width += dis
+                else:
+                    break
+            end_key_width = left_of_key - right_of_key
+            if len(keyword) < 5:
+                end_key_width *= 2.1
+            if end_dis < (val_width + end_key_width) and len(val_str) > max_len:
+                value = val_str
+
+        if value == EMP:
             next_line_id = line_id + 1
             next_line_text = EMP
-            start = 0
-            for idx in range(len(lines[next_line_id]['line'])):
-                val_anno = annos[lines[next_line_id]['line'][idx]]
-                left_of_val = get_left_edge(val_anno)[0]
-                if right_of_key < left_of_val:
-                    start = idx
+            for i in range(len(lines[next_line_id]['line'])):
+                cur = annos[lines[next_line_id]['line'][i]]
+                cur_right = get_right_edge(cur)[0]
+                if get_left_edge(cur)[0] < left_of_key:
+                    next_line_text = EMP
+                    continue
+
+                next_line_text += cur['text']
+
+                if i == len(lines[next_line_id]['line']) - 1:
                     break
-            for idx in range(start, len(lines[next_line_id]['line'])):
-                val_anno = annos[lines[next_line_id]['line'][idx]]
-                next_line_text += val_anno['text']
+                else:
+                    after = annos[lines[next_line_id]['line'][i + 1]]
+                    after_left = get_left_edge(after)[0]
+                    dis = after_left - cur_right
+                    if dis > cur_text_height * 2:
+                        break
+
             value = next_line_text
 
     elif orientation == "under":
+        if start != 0:
+            left_edge = get_right_edge(annos[lines[line_id]['line'][start - 1]])[0]
+        else:
+            left_edge = 0
+        if end == len(lines[line_id]['line']) - 1:
+            right_edge = 10000
+        else:
+            right_edge = get_left_edge(annos[lines[line_id]['line'][end + 1]])[0]
+
         next_line_id = line_id + 1
         next_line_text = EMP
-        start = 0
-        for idx in range(len(lines[next_line_id]['line']) - 1):
-            prev_val_anno = annos[lines[next_line_id]['line'][idx]]
-            cur_val_anno = annos[lines[next_line_id]['line'][idx + 1]]
+        for i in range(len(lines[next_line_id]['line'])):
+            cur = annos[lines[next_line_id]['line'][i]]
+            cur_right = get_right_edge(cur)[0]
+            if get_left_edge(cur)[0] < left_edge or get_right_edge(cur)[0] > right_edge:
+                next_line_text = EMP
+                continue
 
-            prev_right = get_right_edge(prev_val_anno)[0]
-            cur_right = get_right_edge(cur_val_anno)[0]
-
-            if prev_right < left_of_key < cur_right:
-                start = idx + 1
+            next_line_text += cur['text']
+            if i == len(lines[next_line_id]['line']) - 1:
                 break
-        for idx in range(start, len(lines[next_line_id]['line'])):
-            val_anno = annos[lines[next_line_id]['line'][idx]]
-            next_line_text += val_anno['text']
+            else:
+                after = annos[lines[next_line_id]['line'][i + 1]]
+                after_left = get_left_edge(after)[0]
+                dis = after_left - cur_right
+                if dis > cur_text_height * 2:
+                    break
+
         value = next_line_text
 
     elif orientation == "ext_under":
-        next_line_id = line_id + 1
         next_line_text = EMP
-        for idx in range(0, len(lines[next_line_id]['line'])):
-            val_anno = annos[lines[next_line_id]['line'][idx]]
-            next_line_text += val_anno['text']
+        i = 0
+        cur_line_pos = lines[line_id]['pos']
+        cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
+        while i < 3:
+            i += 1
+            next_line_id = line_id + i
+            next_line_pos = lines[next_line_id]['pos']
+
+            dis = next_line_pos - cur_line_pos
+            if cur_text_height * 5 < dis or next_line_id >= len(lines) - 1:
+                break
+            else:
+                for idx in range(0, len(lines[next_line_id]['line'])):
+                    val_anno = annos[lines[next_line_id]['line'][idx]]
+                    next_line_text += val_anno['text']
         value = next_line_text
 
-    if len(value) > max_len:
-        return value
+    elif orientation == "ext_upper":
+        upper_line_text = EMP
+
+        i = 0
+        cur_line_pos = lines[line_id]['pos']
+        cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
+        while i < 3:
+            i += 1
+            upper_line_id = line_id - i
+            upper_line_pos = lines[upper_line_id]['pos']
+
+            dis = cur_line_pos - upper_line_pos
+            if cur_text_height * 5 < dis or upper_line_id <= 0:
+                break
+            else:
+                for idx in range(0, len(lines[upper_line_id]['line'])):
+                    val_anno = annos[lines[upper_line_id]['line'][idx]]
+                    upper_line_text += val_anno['text']
+        value = upper_line_text
+
+    else:
+        value = ""
+
+    if len(value) >= max_len:
+        return clear_value(value)
     else:
         return ""
+
+
+def get_height(anno):
+    _ul, _ur, _br, _bl = anno['boundingBox']['vertices']
+    return (_bl['y'] - _ul['y'] + _br['y'] - _ur['y']) / 2
+
+
+def get_width(anno):
+    _ul, _ur, _br, _bl = anno['boundingBox']['vertices']
+    return (_ur['x'] - _ul['x'] + _br['x'] - _bl['x']) / 2
+
+
+def clear_value(str_value):
+    for ch in ['-', ':']:
+        if ch in str_value:
+            str_value = str_value.replace(ch, '')
+    return str_value
+
+
+def is_candi_line(text):
+    digits = re.findall('\d+', text)
+    alphabets = " ".join(re.findall("[a-zA-Z]+", text))
+    return (len(digits) + len(alphabets)) != 0

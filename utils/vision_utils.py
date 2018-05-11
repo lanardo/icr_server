@@ -108,7 +108,7 @@ class VisionUtils:
         for anno in annos:
             ori = self.__rect_orientation(anno=anno)
             oris[ori] += 1
-        print(oris)
+        # print(oris)
         return oris.index(max(oris))
 
     def __rect_orientation(self, anno):
@@ -178,7 +178,8 @@ class VisionUtils:
     def detect_text(self, path, idx, proc_queue):
         try:
             img = load_image(path)
-            log.log_print("\t send request" + path)
+            if self.debug:
+                log.log_print("\t send request" + path)
 
             response = self.__get_response(self.__make_request(cv_img=img, feature_types=['DOCUMENT_TEXT_DETECTION',
                                                                                           'TEXT_DETECTION',
@@ -219,10 +220,13 @@ class VisionUtils:
                     self.__correlate_orientation(annos=annos, ori=orientation, img=img)
 
                     if self.debug:  # display the line rect
-                        for j in range(3):
-                            pt0 = annos[i]['boundingBox']['vertices'][j]
-                            pt1 = annos[i]['boundingBox']['vertices'][j + 1]
-                            cv2.line(img, (pt0['x'], pt0['y']), (pt1['x'], pt1['y']), (255, 0, 0), 1)
+                        for i in range(len(annos)):
+                            for j in range(3):
+                                pt0 = annos[i]['boundingBox']['vertices'][j]
+                                pt1 = annos[i]['boundingBox']['vertices'][j + 1]
+                                cv2.line(img, (pt0['x'], pt0['y']), (pt1['x'], pt1['y']), (255, 0, 0), 1)
+                        # cv2.imshow("img", img)
+                        # cv2.waitKey(0)
 
                     result = {'id': idx,
                               'annos': annos,
@@ -232,6 +236,7 @@ class VisionUtils:
                               'total_text': annotations[0]['description']}
 
             proc_queue.put(result, True, 1)
-            log.log_print("\t receive response " + path)
+            if self.debug:
+                log.log_print("\t receive response " + path)
         except (qu.Empty, qu.Full) as e:
             log.log_print("\t Exceoption " + str(e))
