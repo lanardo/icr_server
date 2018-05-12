@@ -342,7 +342,7 @@ class Invoice:
             invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
 
-            if self.debug and True:
+            if self.debug or True:
                 print(">>> company:")
                 print(template['prefix']['name'])
 
@@ -369,13 +369,3 @@ class Invoice:
                 'invoice_tax': invoice_tax,
                 'invoice_total': invoice_total
             }
-
-
-# ['', '1510727', 'STIKK.RS1091PTP.HVIT', '', 'STK', '65,06', '325,31'],
-# ['', '5100', 'ELEKTRIKER', '5.5', 'TIM', '515,002', '832,50']
-
-# ['', 'BV ',   'IDS784 4932036 PA3510E08 THERMOZONE ', '', 'STK ', '17 222 , 68 ',   '34 445 . 36 ']
-# ['', 'BV ',   'IDS784 8502585 SIREACY SIRE REGULER ', '', 'STK ', '2 105 , 00 ',    '4 210 , 00 '],
-# ['', 'BV ',   'SER 156 FRAKT ',                     '',   'STK ', '601 , 86 ',      '601 , 86 '],
-# ['', '4100 ', 'LÆRLING ',                           '',   'TIM ', '390 , 00 ',      '20 670 , 00 '],
-# ['', '5100 ', 'ELEKTRIKER ',                        '',   'TIM ', '515 , 00 ',      '26 265 , 00 ']

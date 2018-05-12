@@ -77,12 +77,12 @@ class VisionUtils:
         for feature_type in feature_types:
             feature_obj.append({'type': feature_type})
 
-        context_obj = {"languageHints": ['en']}
+        # context_obj = {"languageHints": ['en']}
 
         request_list.append(
             {'image': content_obj,
              'features': feature_obj,
-             'imageContext': context_obj
+             # 'imageContext': context_obj
              }
         )
         return json.dumps({'requests': request_list}).encode()

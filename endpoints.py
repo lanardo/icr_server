@@ -34,8 +34,8 @@ elif sys.version_info[0] == 2:  # python 2x
 
 
 vis = VisionUtils(debug=False)
-pre = PreProc(debug=True)
-inv = Invoice(debug=True)
+pre = PreProc(debug=False)
+inv = Invoice(debug=False)
 
 
 def main_proc(src_file, debug=False):
@@ -84,7 +84,7 @@ def main_proc(src_file, debug=False):
         pre.pre_proc(content)  # preprocessing the page content
 
         contents.append(content)
-        if debug or True:
+        if debug:
             save_temp_images(content=content)
 
     # parsing and the invoice information -----------------------------------------------------
@@ -109,7 +109,8 @@ def save_temp_images(content):
 
 
 if __name__ == '__main__':
-    path = "./data/20160406038001.TIF.PDF"
-    # path = "./data/201604040012006.TIF.PDF"
-    main_proc(path)
+    folder = "./data"
+    paths = [folder + "/" + fn for fn in os.listdir(folder) if os.path.splitext(fn)[1].lower() == ".pdf"]
+    for path in paths:
+        main_proc(path)
 
