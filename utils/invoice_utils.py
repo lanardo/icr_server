@@ -45,9 +45,7 @@ class Invoice:
 
         for line_id in range(len(lines)):
             line = lines[line_id]
-            line_text = ""
-            for anno_id in line['line']:
-                line_text += annos[anno_id]['text']
+            line_text = line['text']
 
             for component in components:
                 for keyword in component['keywords']:

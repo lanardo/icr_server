@@ -110,5 +110,6 @@ def save_temp_images(content):
 
 if __name__ == '__main__':
     path = "./data/20160406038001.TIF.PDF"
+    # path = "./data/201604040012006.TIF.PDF"
     main_proc(path)
 

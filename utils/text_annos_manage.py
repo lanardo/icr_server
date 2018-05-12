@@ -1,6 +1,7 @@
 import re
 import math
 import copy
+from utils.string_manage import similarity_word
 from operator import itemgetter
 
 """
@@ -349,29 +350,34 @@ def get_val(annos, keyword, line_id, lines, info):
 
     # identify the position of keyword
     cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
-    temp_str = EMP
+
     start = 0
     end = 0
-    for i in range(len(lines[line_id]['line']) - 1):
-        cur = annos[lines[line_id]['line'][i]]
-        cur_right = get_right_edge(cur)[0]
-        after = annos[lines[line_id]['line'][i + 1]]
-        after_left = get_left_edge(after)[0]
+    max_similarity = 0.0
 
-        dis = after_left - cur_right
-        temp_str += cur['text'] + ' '
-        if dis >= cur_text_height * 0.7:
-            if temp_str.replace(' ', '').find(keyword.replace(' ', '')) != -1 and\
-                            math.fabs(len(temp_str.replace(' ', '')) - len(keyword.replace(' ', ''))) < 2.0:
-                end = i
-                break
+    for i in range(len(lines[line_id]['line'])):
+        temp_str = EMP
+        for j in range(i, len(lines[line_id]['line'])):
+            cur = annos[lines[line_id]['line'][j]]
+            cur_right = get_right_edge(cur)[0]
+
+            temp_str += cur['text'] + ' '
+
+            if j == len(lines[line_id]['line']) - 1:
+                dis = 1000  # > cur_text_height * 0.7
             else:
-                temp_str = EMP
-                start = i + 1
-                continue
-        if i == len(lines[line_id]['line']) - 2:
-            end = i + 1
-            temp_str += after['text'] + ' '
+                after = annos[lines[line_id]['line'][j + 1]]
+                after_left = get_left_edge(after)[0]
+                dis = after_left - cur_right
+
+            if dis >= cur_text_height * 0.7:
+                similarity = similarity_word(temp_str, keyword)
+                if max_similarity < similarity:
+                    start = i
+                    end = j
+                    max_similarity = similarity
+
+        if max_similarity >= 0.9: break
 
     right_of_key = get_left_edge(annos[lines[line_id]['line'][start]])[0]
     left_of_key = get_right_edge(annos[lines[line_id]['line'][end]])[0]
@@ -415,7 +421,7 @@ def get_val(annos, keyword, line_id, lines, info):
                     next_line_text = EMP
                     continue
 
-                next_line_text += cur['text']
+                next_line_text += cur['text'] + " "
 
                 if i == len(lines[next_line_id]['line']) - 1:
                     break
@@ -447,7 +453,7 @@ def get_val(annos, keyword, line_id, lines, info):
                 next_line_text = EMP
                 continue
 
-            next_line_text += cur['text']
+            next_line_text += cur['text'] + ' '
             if i == len(lines[next_line_id]['line']) - 1:
                 break
             else:
@@ -475,7 +481,7 @@ def get_val(annos, keyword, line_id, lines, info):
             else:
                 for idx in range(0, len(lines[next_line_id]['line'])):
                     val_anno = annos[lines[next_line_id]['line'][idx]]
-                    next_line_text += val_anno['text']
+                    next_line_text += val_anno['text'] + ' '
         value = next_line_text
 
     elif orientation == "ext_upper":
@@ -495,7 +501,7 @@ def get_val(annos, keyword, line_id, lines, info):
             else:
                 for idx in range(0, len(lines[upper_line_id]['line'])):
                     val_anno = annos[lines[upper_line_id]['line'][idx]]
-                    upper_line_text += val_anno['text']
+                    upper_line_text += val_anno['text'] + ' '
         value = upper_line_text
 
     else:
