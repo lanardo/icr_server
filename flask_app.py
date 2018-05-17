@@ -2,16 +2,11 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file
 from werkzeug.utils import secure_filename
 from collections import OrderedDict
-
+import json
 import endpoints
 import logger as log
 from utils.config import *
 
-"""
-*-------------------------------------------------------*
-|                   Flask Sever Session                 |
-*-------------------------------------------------------*
-"""
 
 app = Flask(__name__)
 
@@ -34,7 +29,6 @@ def ocr():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-
 
     if len(request.files) > 0:
         file = request.files['file']
@@ -66,7 +60,13 @@ def submit():
             src_fpath = os.path.join(UPLOAD_DIR, doc_fn)
             invoice_info = endpoints.main_proc(src_file=src_fpath)
             log.log_print("\n>>>finished")
-            return jsonify(invoice=OrderedDict(invoice_info))
+
+            # return the result dict as a json file -----------------------------------------------
+            result_fn = os.path.splitext(doc_fn)[0] + ".json"
+            result_path = os.path.join(UPLOAD_DIR, result_fn)
+            with open(result_path, 'w') as fp:
+                json.dump(invoice_info, fp)
+            return send_file(result_path, as_attachment=True)
 
         except Exception as e:
             error_str = '\tException: {}'.format(e)

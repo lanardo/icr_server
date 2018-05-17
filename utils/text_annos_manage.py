@@ -537,6 +537,7 @@ def is_candi_line(text):
 
 
 def str2val(word):
+    word = __get_digits(word)
     if word == EMP:
         return -1
     else:
@@ -550,19 +551,22 @@ def str2val(word):
             return -1
 
 
-def autofill_product_line(value_list, indexs):
-    idx_quantity, idx_price, idx_total = indexs
-    if idx_quantity is None or idx_price is None or idx_total is None:
-        return
-    qua = str2val(value_list[idx_quantity])
-    price = str2val(value_list[idx_price])
-    total = str2val(value_list[idx_total])
+def __get_digits(word):
+    word = word.replace(' ', '')
+    tmp = word
+    tmp = tmp.replace(',', '0')
+    tmp = tmp.replace('.', '0')
+    digits = re.findall('\d+', tmp)
+    if len(digits) == 0:
+        return EMP
 
-    if qua == -1 and price != -1 and total != -1:
-        value_list[idx_quantity] = "{:.1f}".format(total / price)
-    if qua != -1 and price == -1 and total != -1:
-        value_list[idx_price] = "{:.2f}".format(total / qua)
-    if qua != -1 and price != -1 and total == -1:
-        value_list[idx_total] = "{:.2f}".format(qua * price)
+    max_di = ""
+    for di in digits:
+        if len(di) > len(max_di):
+            max_di = di
 
-    return value_list
+    pos = tmp.find(max_di)
+    if pos != -1:
+        return word[pos: pos+len(max_di)]
+    else:
+        return EMP

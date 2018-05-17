@@ -9,6 +9,7 @@ import logger as log
 from utils.pre_proc import PreProc
 from utils.vision_utils import VisionUtils
 from utils.invoice_utils import Invoice
+from utils.validate import Validate
 from utils.config import *
 
 if sys.version_info[0] == 3:  # python 3x
@@ -36,7 +37,7 @@ elif sys.version_info[0] == 2:  # python 2x
 vis = VisionUtils(debug=False)
 pre = PreProc(debug=False)
 inv = Invoice(debug=False)
-
+validater = Validate()
 
 def main_proc(src_file, debug=False):
 
@@ -45,7 +46,7 @@ def main_proc(src_file, debug=False):
         sys.exit(1)
 
     # convert pdf to page images ----------------------------------------------------
-    log.log_print("\n==={}".format(src_file))
+    log.log_print("\n\t==={}".format(src_file))
 
     log.log_print("\tpdf to imgs...")
     page_img_paths = pdf.doc2imgs(doc_path=src_file)
@@ -70,7 +71,7 @@ def main_proc(src_file, debug=False):
                 thread.join()
 
         if page_contents_queue.qsize() == 0:
-            log.log_print("response error. resend the request...")
+            log.log_print("response error. resend the request...")  # TODO
             break
 
     # parsing the invoice  -------------------------------------------------------------
@@ -94,9 +95,50 @@ def main_proc(src_file, debug=False):
 
     log.log_print("\tparse the invoice...")
     contents = sorted(contents, key=lambda k: k['id'])
+
     res_dict = inv.parse_invoice(contents=contents)
-    print(res_dict)
+    if debug or True:
+        show_invoice_info(res_dict)
+
     return res_dict
+
+
+def show_invoice_info(info):
+    invoice_details = info['invoice_details']
+    invoice_lines = info['invoice_lines']
+    invoice_tax = info['invoice_tax']
+    invoice_total = info['invoice_total']
+
+    print(">>> company:", info['company'])
+    print(">>> validated: ", info['validated'])
+
+    print(">>> invoice_details:")
+    for key in invoice_details.keys():
+        try:
+            print("\t", key, ":", invoice_details[key])
+        except Exception as e:
+            print("\t", key, ":", (invoice_details[key]).encode("utf-8"))
+
+    print(">>> invoice_lines:")
+    for invoice_line in invoice_lines:
+        try:
+            print("\t", invoice_line)
+        except Exception as e:
+            print("")
+
+    print(">>> invoice_tax:")
+    for key in invoice_tax.keys():
+        try:
+            print("\t", key, ":", invoice_tax[key])
+        except Exception as e:
+            print("\t", key, ":", invoice_tax[key].encode("utf-8"))
+
+    print(">>> invoice_totals:")
+    for key in invoice_total.keys():
+        try:
+            print("\t", key, ":", invoice_total[key].encode("utf-8"))
+        except Exception as e:
+            print("\t", key, ":", invoice_total[key])
 
 
 def save_temp_images(content):

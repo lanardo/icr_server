@@ -3,9 +3,9 @@ import base64
 import copy
 import utils.text_annos_manage as manager
 from utils.template import Template
+from utils.validate import Validate
 import logger as log
 import cv2
-import re
 
 
 EMP = ""
@@ -225,13 +225,6 @@ class Invoice:
 
             # --- fillout the value line with order of components
             if len(value_lines) != -1:
-                for component in components:
-                    if component['meaning'] == "Quantity":
-                        idx_qantity = components.index(component)
-                    elif component['meaning'] == "Price":
-                        idx_price = components.index(component)
-                    elif component['meaning'] == "TotalLineAmount":
-                        idx_totalline = components.index(component)
 
                 filled_lines = []
                 for value_line in value_lines:
@@ -247,7 +240,6 @@ class Invoice:
                                 filled_line[i] = value_line[k]
                                 break
 
-                    filled_line = manager.autofill_product_line(filled_line, [idx_qantity, idx_price, idx_totalline])
                     filled_lines.append(filled_line)
 
                 total_value_lines.extend(filled_lines)
@@ -315,7 +307,7 @@ class Invoice:
                         if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
                             value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,
-                                                        info=component)
+                                                    info=component)
 
                             ret_dict[component['meaning']] = value
                             # if value != EMP:
@@ -342,30 +334,14 @@ class Invoice:
             invoice_total = self.get_total_infos(template=template, contents=contents)
             invoice_lines = self.get_line_infos(template=template, contents=contents)
 
-            if self.debug or True:
-                print(">>> company:")
-                print(template['prefix']['name'])
-
-                print(">>> invoice_details:")
-                for key in invoice_details.keys():
-                    print("\t", key, ":", invoice_details[key])
-
-                print(">>> invoice_lines:")
-                for invoice_line in invoice_lines:
-                    print("\t", invoice_line)
-
-                print(">>> invoice_tax:")
-                for key in invoice_tax.keys():
-                    print("\t", key, ":", invoice_tax[key])
-
-                print(">>> invoice_totals:")
-                for key in invoice_total.keys():
-                    print("\t", key, ":", invoice_total[key])
-
-            return {
+            info = {
                 'company': template['prefix']['name'],
                 'invoice_details': invoice_details,
                 'invoice_lines': invoice_lines,
                 'invoice_tax': invoice_tax,
                 'invoice_total': invoice_total
             }
+
+            validated_info = Validate().validate(template=template, invoice_info=info)
+
+            return validated_info
