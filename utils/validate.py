@@ -31,15 +31,25 @@ class Validate:
             price = manager.str2val(value_list[idx_price])
             total = manager.str2val(value_list[idx_total])
 
-            if qua == -1 and price != -1 and total != -1:
-                qua = total / price
-                value_list[idx_quantity] = "{:.1f}".format(qua)
-            if qua != -1 and price == -1 and total != -1:
-                price = total / qua
-                value_list[idx_price] = "{:.2f}".format(price)
-            if qua != -1 and price != -1 and total == -1:
-                total = qua * price
-                value_list[idx_total] = "{:.2f}".format(total)
+            try:
+                if qua == -1 and price != -1 and total != -1:
+                    qua = total / price
+                    value_list[idx_quantity] = "{:.1f}".format(qua)
+                if qua != -1 and price == -1 and total != -1:
+                    price = total / qua
+                    value_list[idx_price] = "{:.2f}".format(price)
+                if qua != -1 and price != -1 and total == -1:
+                    total = qua * price
+                    value_list[idx_total] = "{:.2f}".format(total)
+            except Exception as e:
+                if total != -1:
+                    price = total
+                    qua = 1.0
+                elif price != -1:
+                    total = price * qua
+                    qua = 1.0
+                else:
+                    continue
 
             if total == qua * price:
                 true_pos += 1

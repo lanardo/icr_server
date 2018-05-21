@@ -164,7 +164,7 @@ class Invoice:
                         elif prev_line['text'].replace(' ', '').find(cur_line['text'].replace(' ', '')) != -1:
                             line_id += 1
                             continue
-                    if dis > manager.get_height(annos[lines[key_line_pos]['line'][0]]) * 3:
+                    if dis > manager.get_height(annos[lines[key_line_pos]['line'][0]]) * 5:
                         break
                     filtered_lines.append(cur_line)
                     line_id += 1
@@ -175,6 +175,7 @@ class Invoice:
             # --- config the lines ---------------------------------------------------
             value_lines = []
             if len(main_keyanno_list) != -1:
+                cnt_false_lines = 0
                 for line_id in range(key_line_pos + 1, len(lines)):
                     line = lines[line_id]['line']
 
@@ -222,10 +223,12 @@ class Invoice:
                         elif lines[line_id]['pos'] - lines[key_line_pos]['pos'] < manager.get_height(anno=annos[lines[key_line_pos]['line'][0]]) * 3:
                             continue
                         else:
-                            break
+                            cnt_false_lines += 1
+                            if cnt_false_lines > 2:
+                                break
 
             # --- fillout the value line with order of components
-            if len(value_lines) != -1:
+            if len(value_lines) != 0:
 
                 filled_lines = []
                 for value_line in value_lines:
