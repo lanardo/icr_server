@@ -112,8 +112,8 @@ class Validate:
             tax_type = tax_val * 100 / total_exc
 
         if self.__equal(total_inc, total_exc + tax_val) and self.__equal(tax_val, total_exc * tax_type / 100):
-            rounding = total_exc + tax_val - round(total_inc)
-            total_inc = round(total_exc + tax_val)
+            rounding = round(total_inc) - (total_exc + tax_val)
+            total_inc = round(total_exc + tax_val + rounding)
             tax_type = int(round(tax_type))
 
             v_tax = {'TaxValue': round(tax_val, 2), 'TaxType': round(tax_type, 0)}

@@ -2,6 +2,7 @@ import sys
 import base64
 import copy
 import utils.text_annos_manage as manager
+import utils.string_manage as stringer
 from utils.template import Template
 from utils.validate import Validate
 import logger as log
@@ -252,7 +253,7 @@ class Invoice:
         orientation = totals['orientation']
 
         ret_dict = {}
-        for content in contents: # get total info from the last page
+        for content in contents:  # get total info from the last page
             annos = content['annos']
             lines = content['lines']
             for line_id in range(len(lines)):
@@ -266,7 +267,8 @@ class Invoice:
                             break
 
                         component['orientation'] = orientation
-                        pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
+                        # pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
+                        pos = stringer.find_keyword(line_text, keyword)
                         if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
                             value = manager.get_val(annos=annos, keyword=keyword,
                                                     lines=lines, line_id=line_id,

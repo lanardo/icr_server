@@ -99,7 +99,8 @@ def main_proc(src_file, debug=False):
     res_dict = inv.parse_invoice(contents=contents)
     if debug or True:
         show_invoice_info(res_dict)
-
+        for content in contents:
+            save_temp_images(content=content)
     return res_dict
 
 
@@ -142,11 +143,11 @@ def show_invoice_info(info):
 
 
 def save_temp_images(content):
-    log.log_print("\t page No     : {}".format(content['id']))
-    log.log_print("\t\t page label  : {}".format(content['label']))
-    log.log_print("\t\t orientation : {}".format(ORIENTATIONS[content['orientation']]))
-    log.log_print("\t\t len of annos: {}".format(len(content['annos'])))
-    log.log_print("\t\t image size  : {} x {}".format(content['image'].shape[1], content['image'].shape[0]))
+    # log.log_print("\t page No     : {}".format(content['id']))
+    # log.log_print("\t\t page label  : {}".format(content['label']))
+    # log.log_print("\t\t orientation : {}".format(ORIENTATIONS[content['orientation']]))
+    # log.log_print("\t\t len of annos: {}".format(len(content['annos'])))
+    # log.log_print("\t\t image size  : {} x {}".format(content['image'].shape[1], content['image'].shape[0]))
     cv2.imwrite("{}temp_{}.jpg".format(LOG_DIR, content['id'] + 1), content['image'])
 
 

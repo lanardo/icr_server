@@ -65,7 +65,7 @@ def submit():
             result_fn = os.path.splitext(doc_fn)[0] + ".json"
             result_path = os.path.join(UPLOAD_DIR, result_fn)
             with open(result_path, 'w') as fp:
-                json.dump(invoice_info, fp)
+                json.dump(invoice_info, fp, ensure_ascii=False)
             return send_file(result_path, as_attachment=True)
 
         except Exception as e:
