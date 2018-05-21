@@ -121,7 +121,10 @@ class Invoice:
 
             # --- index of the "Description" item on the invoiceline components ------
             description_id = -1
+            line_total_id = -1
             if len(main_keyanno_list) != -1:
+                ###################################################
+                # --- find the description keyword index ---
                 description_keywords = []
                 for component in components:
                     if component['meaning'] == "Description":
@@ -131,6 +134,17 @@ class Invoice:
                     if key_anno['keyword'] in description_keywords:
                         description_id = k
                         break
+                # --- find the total keyword index in a line ---
+                line_total_keywords = []
+                for component in components:
+                    if component['meaning'] == "TotalLineAmount":
+                        line_total_keywords = component['keywords']
+                for k in range(len(main_keyanno_list)):
+                    key_anno = main_keyanno_list[k]
+                    if key_anno['keyword'] in line_total_keywords:
+                        line_total_id = k
+                        break
+                ###################################################
 
                 if self.debug:
                     img = content['image']
@@ -216,8 +230,12 @@ class Invoice:
                     if len(value_line) - num_emptys > THRESH_MIN_LINE_KEYS:
                         value_lines.append(value_line)
                     else:
-                        if num_emptys == len(value_line) - 1 and value_line[description_id] != EMP and \
-                                        len(value_lines) > 0 and value_lines[-1][description_id] != EMP:
+                        if len(value_line) >= line_total_id + 1 and num_emptys == len(value_line) - 2 and \
+                                value_line[description_id] != EMP and value_line[line_total_id] != EMP:
+                            value_lines.append(value_line)
+                            continue
+                        elif num_emptys == len(value_line) - 1 and value_line[description_id] != EMP and \
+                                len(value_lines) > 0 and value_lines[-1][description_id] != EMP:
                             value_lines[-1][description_id] += value_line[description_id]
                             continue
                         elif lines[line_id]['pos'] - lines[key_line_pos]['pos'] < manager.get_height(anno=annos[lines[key_line_pos]['line'][0]]) * 3:
@@ -234,7 +252,7 @@ class Invoice:
                 for value_line in value_lines:
                     # init the empty contrainer for result dict
                     filled_line = [EMP] * len(components)
-                    filled_line[0] = str(value_lines.index(value_line))
+                    filled_line[0] = str(value_lines.index(value_line) + 1)
 
                     for i in range(len(components)):
                         component = components[i]
