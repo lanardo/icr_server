@@ -471,7 +471,7 @@ def get_val(annos, keyword, line_id, lines, info):
         i = 0
         cur_line_pos = lines[line_id]['pos']
         cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
-        while i < 3:
+        while i < 2:
             i += 1
             next_line_id = line_id + i
             next_line_pos = lines[next_line_id]['pos']
@@ -491,7 +491,7 @@ def get_val(annos, keyword, line_id, lines, info):
         i = 0
         cur_line_pos = lines[line_id]['pos']
         cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
-        while i < 3:
+        while i < 2:
             i += 1
             upper_line_id = line_id - i
             upper_line_pos = lines[upper_line_id]['pos']

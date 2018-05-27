@@ -91,6 +91,7 @@
 		"InvoiceLines": {
 			"type": "dict",
 			"orientation": "under",
+			"multi_lines": [["Description", "Description"]],
 			"components": [
 				{
 					"meaning": "LineID",

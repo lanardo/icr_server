@@ -28,7 +28,7 @@ inv = Invoice(debug=False)
 validater = Validate()
 
 
-def main_proc(src_file, debug=False):
+def ocr_proc(src_file, debug=False):
 
     if not os.path.exists(src_file):
         log.log_print("\t no exist such file! {}\n".format(src_file))
@@ -97,6 +97,7 @@ def main_proc(src_file, debug=False):
 
     # ------------------ rearrnage the format and binary objects -----------------------------------------
     res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, contents=contents, template=template)
+    print(res_info)
     return res_info
 
 
@@ -150,6 +151,6 @@ def save_temp_images(content):
 if __name__ == '__main__':
     folder = "./data"
     paths = [folder + "/" + fn for fn in os.listdir(folder) if os.path.splitext(fn)[1].lower() == ".pdf"]
-    for path in paths:
-        main_proc(path)
 
+    path = "./data/2124_91737293_101767523.pdf"
+    ocr_proc(path)

@@ -35,7 +35,8 @@ class InfoDictManage:
             image = content['image']
             retval, buffer = cv2.imencode('.jpg', image)
             jpg_as_text = base64.b64encode(buffer)
-            binary_objs.append(jpg_as_text)
+            base_string = jpg_as_text.decode('utf-8')
+            binary_objs.append(base_string)
         self.__parent(key="Attachments", val=[("Binary object", binary_objs, True)])  # MANDATORY
 
         self.__parent("Delivery details", [("Date", EMP, False),
@@ -88,6 +89,8 @@ class InfoDictManage:
             )
             lines.append((line_key, line_val, False))
         self.__parent(key="Invoice line", val=lines)
+
+        return self.info_dict
 
     def __parent(self, key, val=EMP, mandatory=False):
         if type(val) == list:

@@ -55,9 +55,9 @@
 			{
 				"meaning": "Free Text",
 				"keywords": [
-					"Deres ref."
+					"Ant.", "Enhet"
 				],
-				"orientation": "ext_under",
+				"orientation": "ext_upper",
 				"max_len": 10
 			}
 		],

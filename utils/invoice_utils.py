@@ -10,6 +10,7 @@ from utils.validate import Validate
 
 
 EMP = ""
+SPLITER = "_/SP/_"
 THRESH_MIN_LINE_KEYS = 3
 
 
@@ -69,6 +70,10 @@ class Invoice:
             annos = content['annos']
             lines = copy.deepcopy(content['lines'])
             components = template['info']['InvoiceLines']['components']
+            if 'multi_lines' in template['info']['InvoiceLines'].keys():
+                multi_line_component_sets = template['info']['InvoiceLines']['multi_lines']
+            else:
+                multi_line_component_sets = []
 
             # --- determine the postion keywords line ---------------------------------
             main_keyword_list = []
@@ -120,20 +125,27 @@ class Invoice:
                     i += 1
 
             # --- index of the "Description" item on the invoiceline components ------
-            description_id = -1
+            mul_line_1st_item_ids = []
             line_total_id = -1
             if len(main_keyanno_list) != -1:
                 ###################################################
-                # --- find the description keyword index ---
-                description_keywords = []
-                for component in components:
-                    if component['meaning'] == "Description":
-                        description_keywords = component['keywords']
-                for k in range(len(main_keyanno_list)):
-                    key_anno = main_keyanno_list[k]
-                    if key_anno['keyword'] in description_keywords:
-                        description_id = k
-                        break
+                # --- find the multi-line item's index ---
+                for mul_line_set in multi_line_component_sets:
+                    meaning_1, meaning_2 = mul_line_set[:2]
+                    meaning_1_keywords, meaning_2_keywords = [], []
+
+                    for component in components:
+                        if component['meaning'] == meaning_1:
+                            meaning_1_keywords = component['keywords']
+                    # for component in components:
+                    #     if component['meaning'] == meaning_2:
+                    #         meaning_2_keywords = component['keywords']
+
+                    for k in range(len(main_keyanno_list)):
+                        key_anno = main_keyanno_list[k]
+                        if key_anno['keyword'] in meaning_1_keywords:
+                            mul_line_1st_item_ids.append(k)
+                            break
                 # --- find the total keyword index in a line ---
                 line_total_keywords = []
                 for component in components:
@@ -151,7 +163,7 @@ class Invoice:
                     for key_anno in main_keyanno_list:
                         pt1 = key_anno['left']
                         pt2 = key_anno['right']
-                        img = cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]),int(pt2[1])), (0, 0, 255), 10)
+                        img = cv2.line(img, (int(pt1[0]), int(pt1[1])), (int(pt2[0]), int(pt2[1])), (0, 0, 255), 10)
                     content['image'] = img
 
             # --- filter the wrong parsed line from the lines
@@ -231,12 +243,13 @@ class Invoice:
                         value_lines.append(value_line)
                     else:
                         if len(value_line) >= line_total_id + 1 and num_emptys == len(value_line) - 2 and \
-                                value_line[description_id] != EMP and value_line[line_total_id] != EMP:
+                                value_line[mul_line_1st_item_ids[-1]] != EMP and value_line[line_total_id] != EMP:
                             value_lines.append(value_line)
                             continue
-                        elif num_emptys == len(value_line) - 1 and value_line[description_id] != EMP and \
-                                len(value_lines) > 0 and value_lines[-1][description_id] != EMP:
-                            value_lines[-1][description_id] += value_line[description_id]
+                        elif num_emptys == len(value_line) - 1 and len(value_lines) > 0:
+                            for mul_line_1st_item_id in mul_line_1st_item_ids:
+                                if value_line[mul_line_1st_item_id] != EMP and value_lines[-1][mul_line_1st_item_id] != EMP:
+                                    value_lines[-1][mul_line_1st_item_id] += SPLITER + value_line[mul_line_1st_item_id]
                             continue
                         elif lines[line_id]['pos'] - lines[key_line_pos]['pos'] < manager.get_height(anno=annos[lines[key_line_pos]['line'][0]]) * 3:
                             continue
@@ -252,7 +265,7 @@ class Invoice:
                 for value_line in value_lines:
                     # init the empty contrainer for result dict
                     filled_line = [EMP] * len(components)
-                    filled_line[0] = str(value_lines.index(value_line) + 1)
+                    filled_line[0] = str(value_lines.index(value_line) + 1)  # line id = filled line index
 
                     for i in range(len(components)):
                         component = components[i]
@@ -261,6 +274,28 @@ class Invoice:
                             if key_anno['keyword'] in component['keywords']:
                                 filled_line[i] = value_line[k]
                                 break
+
+                    # fix the multi-line values
+                    if len(multi_line_component_sets) != 0:
+                        for mul_line_set in multi_line_component_sets:
+                            meaning_1, meaning_2 = mul_line_set[:2]
+                            for i in range(len(components)):
+                                if components[i]['meaning'] == meaning_1:
+                                    id1 = i
+                                if components[i]['meaning'] == meaning_2:
+                                    id2 = 2
+
+                            if not id1 or not id2:
+                                continue
+                            if id1 == id2:
+                                continue
+                            elif id1 != id2:
+                                sps = filled_line[id1].split(SPLITER)
+                                if filled_line[id1] != EMP and filled_line[id2] == EMP and len(sps) == 2:
+                                    filled_line[id1] = sps[0]
+                                    filled_line[id2] = sps[-1]
+                            else:
+                                continue
 
                     filled_lines.append(filled_line)
 
