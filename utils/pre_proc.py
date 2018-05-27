@@ -1,10 +1,10 @@
-import imutils
-import math
+import sys
+
 import cv2
-import numpy as np
+import imutils
+
 import logger as log
 from utils.text_annos_manage import *
-import sys
 
 
 class PreProc:

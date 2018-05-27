@@ -1,12 +1,13 @@
-import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, send_file
-from werkzeug.utils import secure_filename
-from collections import OrderedDict
+import base64
 import json
+import os
+
+from flask import Flask, render_template, request, send_file
+from werkzeug.utils import secure_filename
+from utils.settings import *
+
 import endpoints
 import logger as log
-from utils.config import *
-
 
 app = Flask(__name__)
 
@@ -24,7 +25,7 @@ def ocr():
     """
         initial rendering of the web interface
     """
-    return render_template('upload.html')
+    return render_template('ocr.html')
 
 
 @app.route('/submit', methods=['POST'])
@@ -58,7 +59,7 @@ def submit():
             # ocr progress with the uploaded files ------------------------------------------------
             log.log_print("\tparse the invoice [{}]".format(doc_fn))
             src_fpath = os.path.join(UPLOAD_DIR, doc_fn)
-            invoice_info = endpoints.main_proc(src_file=src_fpath)
+            invoice_info = endpoints.ocr_proc(src_file=src_fpath)
             log.log_print("\n>>>finished")
 
             # return the result dict as a json file -----------------------------------------------

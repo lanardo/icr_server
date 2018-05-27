@@ -4,7 +4,7 @@ import cv2
 import logger as log
 
 
-class Pdf2Jpg:
+class PdfUtilsUbuntu:
 
     def __init__(self):
         pass

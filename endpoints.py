@@ -4,34 +4,22 @@ import sys
 import threading as thr
 
 import cv2
-
-import logger as log
-from utils.pre_proc import PreProc
-from utils.vision_utils import VisionUtils
+import queue as qu
+from utils.settings import *
 from utils.invoice_utils import Invoice
+from utils.pre_proc import PreProc
 from utils.validate import Validate
-from utils.config import *
+from utils.vision_utils import VisionUtils
+from utils.info_dict_mange import InfoDictManage
+import logger as log
 
-if sys.version_info[0] == 3:  # python 3x
-    import queue as qu
-
-    try:
-        from utils.settings import device
-        if device == "EC2":
-            from utils.pdf2jpg import Pdf2Jpg
-            pdf = Pdf2Jpg()
-        else:
-            from utils.pdf_utils import PdfUtils
-            pdf = PdfUtils()
-    except Exception:
-        from utils.pdf_utils import PdfUtils
-        pdf = PdfUtils()
-
-
-elif sys.version_info[0] == 2:  # python 2x
-    from utils.pdf2jpg import Pdf2Jpg
-    pdf = Pdf2Jpg()
-    import Queue as qu
+from utils.settings import MACHINE
+if MACHINE == "EC2":
+    from utils.pdf_utils_ubuntu import PdfUtilsUbuntu
+    pdf = PdfUtilsUbuntu()
+else:
+    from utils.pdf_utils_win import PdfUtilsWin
+    pdf = PdfUtilsWin()
 
 
 vis = VisionUtils(debug=False)
@@ -39,19 +27,20 @@ pre = PreProc(debug=False)
 inv = Invoice(debug=False)
 validater = Validate()
 
+
 def main_proc(src_file, debug=False):
 
     if not os.path.exists(src_file):
         log.log_print("\t no exist such file! {}\n".format(src_file))
         sys.exit(1)
 
-    # convert pdf to page images ----------------------------------------------------
+    # ------------------ convert pdf to page images ----------------------------------------------------
     log.log_print("\n\t==={}".format(src_file))
 
     log.log_print("\tpdf to imgs...")
     page_img_paths = pdf.doc2imgs(doc_path=src_file)
 
-    # imges to pdf ------------------------------------------------------------------
+    # ------------------ imges to pdf ------------------------------------------------------------------
     log.log_print("\tgoogle vision api...")
     page_contents_queue = qu.Queue()
     threads = []
@@ -74,7 +63,7 @@ def main_proc(src_file, debug=False):
             log.log_print("response error. resend the request...")  # TODO
             break
 
-    # parsing the invoice  -------------------------------------------------------------
+    # ------------------ parsing the invoice  -------------------------------------------------------------
     log.log_print("\t # contents: {}".format(page_contents_queue.qsize()))
     contents = []
     while page_contents_queue.qsize() > 0:
@@ -88,20 +77,27 @@ def main_proc(src_file, debug=False):
         if debug:
             save_temp_images(content=content)
 
-    # parsing and the invoice information -----------------------------------------------------
+    # ------------------ parsing and the invoice information ---------------------------------------------
     if len(contents) == 0:
         log.log_print("\tnot contents\n")
         sys.exit(0)
-
     log.log_print("\tparse the invoice...")
     contents = sorted(contents, key=lambda k: k['id'])
 
-    res_dict = inv.parse_invoice(contents=contents)
+    template, raw_info = inv.parse_invoice(contents=contents)
+
+    # ------------------ validate the parsed the info dict -----------------------------------------------
+    validated_info = Validate().validate(template=template, invoice_info=raw_info)
+
+    # ------------------ show the detected result and save temp images -----------------------------------
     if debug or True:
-        show_invoice_info(res_dict)
+        show_invoice_info(validated_info)
         for content in contents:
             save_temp_images(content=content)
-    return res_dict
+
+    # ------------------ rearrnage the format and binary objects -----------------------------------------
+    res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, contents=contents, template=template)
+    return res_info
 
 
 def show_invoice_info(info):

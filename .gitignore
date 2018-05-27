@@ -2,3 +2,4 @@
 data
 dataset/samples
 logs
+utils/settings_local.py

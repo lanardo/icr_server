@@ -15,7 +15,7 @@ import cv2
 import logger as log
 
 
-class PdfUtils:
+class PdfUtilsWin:
 
     def __init__(self, resolution=200):
         self.resolution = resolution  # DPI

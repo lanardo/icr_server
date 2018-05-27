@@ -1,8 +1,9 @@
-import re
-import math
 import copy
-from utils.string_manage import similarity_word
+import math
+import re
 from operator import itemgetter
+
+from utils.string_manage import similarity_word
 
 """
     annotation = 

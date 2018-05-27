@@ -1,6 +1,7 @@
-import math
-import utils.text_annos_manage as manager
 import copy
+import math
+
+import utils.text_annos_manage as manager
 
 EMP = ""
 
@@ -91,13 +92,15 @@ class Validate:
         total_exc = manager.str2val(total['TotalExclusiveTAX'])
         tax_val, tax_type = v_tax['TaxValue'], v_tax['TaxType']
 
-        # v_total,
-        # total_exc, total_exc, rounding
-        # tax_val, tax_type
-
-        # total_exc = total_exc + tax_val ( + rounding )
-        # tax_val = total_exc * tax_type / 100
-        # v_total = total_exc
+        """ validteing Rule
+            # v_total,
+            # total_exc, total_exc, rounding
+            # tax_val, tax_type
+    
+            # total_exc = total_exc + tax_val ( + rounding )
+            # tax_val = total_exc * tax_type / 100
+            # v_total = total_exc
+        """
 
         if self.__equal(total_inc, total_exc + tax_val):
             tax_type = tax_val * 100 / total_exc

@@ -1,12 +1,12 @@
-import sys
-import base64
 import copy
-import utils.text_annos_manage as manager
+
+import cv2
+
+import logger as log
 import utils.string_manage as stringer
+import utils.text_annos_manage as manager
 from utils.template import Template
 from utils.validate import Validate
-import logger as log
-import cv2
 
 
 EMP = ""
@@ -349,7 +349,7 @@ class Invoice:
 
         if template is None:  # unknown document type
             log.log_print("\tunknown document type.\n")
-            return {'error': "unknown document type."}
+            return template, {'error': "unknown document type."}
         else:
             log.log_print("\t\ttemplate: {}.\n".format(template['prefix']['name']))
             invoice_details = self.get_details_infos(template=template, contents=contents)
@@ -365,6 +365,4 @@ class Invoice:
                 'invoice_total': invoice_total
             }
 
-            validated_info = Validate().validate(template=template, invoice_info=info)
-
-            return validated_info
+            return template, info

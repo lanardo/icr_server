@@ -36,7 +36,7 @@ class Template:
                     if temp_dict["type"] == "invoice":
                         templates.append(temp_dict)
                     else:
-                        sys.stdout.write("should be invoice: {}\n".format(temp_dict["type"]))
+                        sys.stdout.write("type{} should be invoice.\n".format(temp_dict["type"]))
                 except Exception as e:
                     print(e)
         return templates
