@@ -49,7 +49,10 @@ class PdfUtilsWin:
             for id in range(len(page_imgs)):
                 img = page_imgs[id]
                 img_path = os.path.join(trail, (base + "-" + str(id + 1) + ".jpg"))
-                cv2.imwrite(img_path, img)
+                if img is None and os.path.exists(img_path):
+                    pass
+                else:
+                    cv2.imwrite(img_path, img)
                 paths.append(img_path)
 
             log.log_print("\t pages: # {}".format(len(paths)))

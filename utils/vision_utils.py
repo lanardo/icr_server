@@ -46,7 +46,7 @@ def load_image(image_path):
         cv_img = np.array(image)
         cv_img = cv_img[:, :, ::-1].copy()
         return cv_img
-    except (AttributeError, KeyError, IndexError):
+    except Exception as e:
         # cases: image don't have getexif
         cv_img = cv2.imread(image_path)
         return cv_img
@@ -182,6 +182,10 @@ class VisionUtils:
     def detect_text(self, path, idx, proc_queue):
         try:
             img = load_image(path)
+
+            if img is None:
+                log.log_print("\t not readable pdf format")
+
             if self.debug:
                 log.log_print("\t send request" + path)
 
@@ -192,6 +196,7 @@ class VisionUtils:
             if response is None:
                 result = None
                 log.log_print("\t\tresponse error of google vision api\n")
+
             else:
                 # check the label of the uploaded image data
                 _flag = False
@@ -216,7 +221,8 @@ class VisionUtils:
                         if type(text) is not str:
                             text = text.encode("utf-8")
                         anno = {'boundingBox': annotation['boundingPoly'],
-                                'text': text}
+                                'text': text,
+                                'used': False}
                         annos.append(anno)
 
                     # recognize the orientation

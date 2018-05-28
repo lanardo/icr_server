@@ -24,6 +24,8 @@ SAME_LINE_THRESH = 0.3  # small
 MERGE_THRESH = 0.2  # small
 
 EMP = ""
+PERCENT_MARK = "%"
+
 
 def __is_with_digit(word):
     word = word.replace(' ', '')
@@ -46,6 +48,19 @@ def distance_anno2anno(left, right):
     end_of_left = (left['boundingBox']['vertices'][1]['x'] + left['boundingBox']['vertices'][2]['x']) / 2
     start_of_right = (right['boundingBox']['vertices'][0]['x'] + right['boundingBox']['vertices'][3]['x']) / 2
     return start_of_right - end_of_left
+
+
+def is_line_discount(anno):
+    try:
+        text = anno['text']
+        sps = text.split(PERCENT_MARK)
+
+        if len(sps) > 2 and __is_with_digit(sps[0]):
+            return True
+        else:
+            return False
+    except Exception:
+        return False
 
 
 def is_same_line(src_anno, dst_anno):
@@ -360,6 +375,7 @@ def get_val(annos, keyword, line_id, lines, info):
         temp_str = EMP
         for j in range(i, len(lines[line_id]['line'])):
             cur = annos[lines[line_id]['line'][j]]
+            if cur['used']: continue
             cur_right = get_right_edge(cur)[0]
 
             temp_str += cur['text'] + ' '
@@ -382,6 +398,8 @@ def get_val(annos, keyword, line_id, lines, info):
 
     right_of_key = get_left_edge(annos[lines[line_id]['line'][start]])[0]
     left_of_key = get_right_edge(annos[lines[line_id]['line'][end]])[0]
+    for i in range(start, end):
+        annos[lines[line_id]['line'][i]]['used'] = True
 
     if orientation == "left":
         value = EMP
@@ -409,7 +427,7 @@ def get_val(annos, keyword, line_id, lines, info):
             end_key_width = left_of_key - right_of_key
             if len(keyword) < 5:
                 end_key_width *= 2.1
-            if end_dis < (val_width + end_key_width) and len(val_str) > max_len:
+            if end_dis < (val_width + end_key_width * 3) and len(val_str) > max_len:
                 value = val_str
 
         if value == EMP:
@@ -417,12 +435,15 @@ def get_val(annos, keyword, line_id, lines, info):
             next_line_text = EMP
             for i in range(len(lines[next_line_id]['line'])):
                 cur = annos[lines[next_line_id]['line'][i]]
+                # if cur['used']: continue
+
                 cur_right = get_right_edge(cur)[0]
                 if get_left_edge(cur)[0] < left_of_key:
                     next_line_text = EMP
                     continue
 
                 next_line_text += cur['text'] + " "
+                # cur['used'] = True
 
                 if i == len(lines[next_line_id]['line']) - 1:
                     break
@@ -449,12 +470,14 @@ def get_val(annos, keyword, line_id, lines, info):
         next_line_text = EMP
         for i in range(len(lines[next_line_id]['line'])):
             cur = annos[lines[next_line_id]['line'][i]]
+            if cur['used']: continue
             cur_right = get_right_edge(cur)[0]
             if get_left_edge(cur)[0] < left_edge or get_right_edge(cur)[0] > right_edge:
                 next_line_text = EMP
                 continue
 
             next_line_text += cur['text'] + ' '
+            cur['used'] = True
             if i == len(lines[next_line_id]['line']) - 1:
                 break
             else:
@@ -467,23 +490,41 @@ def get_val(annos, keyword, line_id, lines, info):
         value = next_line_text
 
     elif orientation == "ext_under":
-        next_line_text = EMP
-        i = 0
-        cur_line_pos = lines[line_id]['pos']
-        cur_text_height = get_height(anno=annos[lines[line_id]['line'][0]])
-        while i < 2:
-            i += 1
-            next_line_id = line_id + i
-            next_line_pos = lines[next_line_id]['pos']
+        if start != 0:
+            left_edge = get_right_edge(annos[lines[line_id]['line'][start - 1]])[0]
+        else:
+            left_edge = 0
+        if end == len(lines[line_id]['line']) - 1:
+            right_edge = 10000
+        else:
+            right_edge = get_left_edge(annos[lines[line_id]['line'][end + 1]])[0]
 
-            dis = next_line_pos - cur_line_pos
-            if cur_text_height * 5 < dis or next_line_id >= len(lines) - 1:
-                break
-            else:
-                for idx in range(0, len(lines[next_line_id]['line'])):
-                    val_anno = annos[lines[next_line_id]['line'][idx]]
-                    next_line_text += val_anno['text'] + ' '
-        value = next_line_text
+        value = EMP
+        j = 0
+        while j < 2:
+            j += 1
+            next_line_id = line_id + j
+            next_line_text = EMP
+            for i in range(len(lines[next_line_id]['line'])):
+                cur = annos[lines[next_line_id]['line'][i]]
+                if cur['used']: continue
+                cur_right = get_right_edge(cur)[0]
+                if get_left_edge(cur)[0] < left_edge or get_right_edge(cur)[0] > right_edge:
+                    next_line_text = EMP
+                    continue
+
+                next_line_text += cur['text'] + ' '
+                cur['used'] = True
+                if i == len(lines[next_line_id]['line']) - 1:
+                    break
+                else:
+                    after = annos[lines[next_line_id]['line'][i + 1]]
+                    after_left = get_left_edge(after)[0]
+                    dis = after_left - cur_right
+                    if dis > cur_text_height * 2:
+                        break
+
+            value += " " + next_line_text
 
     elif orientation == "ext_upper":
         upper_line_text = EMP
@@ -501,8 +542,11 @@ def get_val(annos, keyword, line_id, lines, info):
                 break
             else:
                 for idx in range(0, len(lines[upper_line_id]['line'])):
+                    if val_anno['used']: continue
                     val_anno = annos[lines[upper_line_id]['line'][idx]]
                     upper_line_text += val_anno['text'] + ' '
+                    val_anno['used'] = True
+
         value = upper_line_text
 
     else:
@@ -542,8 +586,13 @@ def str2val(word):
     if word == EMP:
         return -1
     else:
-        word = word.replace(' ', '')
-        word = word.replace(',', '.')
+        if word.find(".") != -1 and word.find(",") != -1 and word.find(".") < word.find(","):
+            word = word.replace(' ', '')
+            word = word.replace('.', '')
+            word = word.replace(',', '.')
+        else:
+            word = word.replace(' ', '')
+            word = word.replace(',', '.')
         try:
             val = float(word)
             return val

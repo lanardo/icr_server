@@ -153,4 +153,5 @@ if __name__ == '__main__':
 
     # path = "./data/20160406038001.TIF.PDF"  # bravida
     path = "./data/2124_91737293_101767523.pdf"  # DAHL
+    img = cv2.imread("./data/2124_91737293_101767523-1.jpg")
     ocr_proc(path)

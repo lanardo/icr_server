@@ -5,7 +5,7 @@
 		"fname": "DAHL.pdf",
 		"name": "DAHL",
 		"keywords": [
-			"DAHL","Dahl Svergie AB"
+			"DAHL", "Dahl Svergie AB"
 		]
 	},
 	"info": {
@@ -24,7 +24,7 @@
 					"Fakturadatum"
 				],
 				"orientation": "left",
-				"max_len": 8
+				"max_len": 5
 			},
 			{
 				"meaning": "InvoiceDueDate",
@@ -33,7 +33,7 @@
 					"Forfallodatum"
 				],
 				"orientation": "left",
-				"max_len": 8
+				"max_len": 5
 			},
 			{
 				"meaning": "TransactionID",
@@ -92,7 +92,7 @@
 				{
 					"meaning": "LineID",
 					"keywords": [
-						""
+						"Rad"
 					]
 				},
 				{
@@ -134,6 +134,12 @@
 					]
 				},
 				{
+					"meaning": "DiscountPrice",
+					"keywords": [
+						"Nettopris"
+					]
+				},
+				{
 					"meaning": "TotalLineAmount",
 					"keywords": [
 						"Belopp"
@@ -146,12 +152,6 @@
 			"orientation": "under",
 			"components": [
 				{
-					"meaning": "TaxValue",
-					"keywords": [
-						"Moms"
-					]
-				},
-				{
 					"meaning": "TaxType",
 					"keywords": [
 						"Moms %"
@@ -160,6 +160,12 @@
 						"25.00%",
 						"15.00%",
 						"10.00%"
+					]
+				},
+				{
+					"meaning": "TaxValue",
+					"keywords": [
+						"Moms"
 					]
 				}
 			]
@@ -171,7 +177,7 @@
 				{
 					"meaning": "TotalExclusiveTAX",
 					"keywords": [
-						"Varuvärde", "Summa Ordertotal"
+						"Momsgrundande", "Varuvärde", "Summa Ordertotal"
 					]
 				},
 				{
@@ -183,7 +189,7 @@
 				{
 					"meaning": "TotalInclusiveTAX",
 					"keywords": [
-						"Att betala", 	"Att betala SEK"
+						"Att betala SEK", "Att betala"
 					]
 				}
 			]

@@ -39,28 +39,29 @@ class Invoice:
         return template
 
     def get_details_infos(self, template, contents):
-        content = contents[0]  # get details info from the first page
-        annos = content['annos']
-        lines = content['lines']
         components = template['info']['InvoiceDetails']
         ret_dict = {}
 
-        for line_id in range(len(lines)):
-            line = lines[line_id]
-            line_text = line['text']
+        for content in contents:
+            annos = content['annos']
+            lines = content['lines']
 
-            for component in components:
-                for keyword in component['keywords']:
-                    if keyword == EMP:
-                        ret_dict[component['meaning']] = EMP
-                        break
+            for line_id in range(len(lines)):
+                line = lines[line_id]
+                line_text = line['text']
 
-                    pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
-                    if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
-                        value = manager.get_val(annos=annos, keyword=keyword,
-                                                lines=lines, line_id=line_id,
-                                                info=component)
-                        ret_dict[component['meaning']] = value
+                for component in components:
+                    for keyword in component['keywords']:
+                        if keyword == EMP:
+                            ret_dict[component['meaning']] = EMP
+                            break
+
+                        pos = line_text.replace(' ', '').find(keyword.replace(' ', ''))
+                        if pos != -1 and (component['meaning'] not in ret_dict.keys() or ret_dict[component['meaning']] == EMP):
+                            value = manager.get_val(annos=annos, keyword=keyword,
+                                                    lines=lines, line_id=line_id,
+                                                    info=component)
+                            ret_dict[component['meaning']] = value
 
         return ret_dict
 
@@ -137,6 +138,7 @@ class Invoice:
                     for component in components:
                         if component['meaning'] == meaning_1:
                             meaning_1_keywords = component['keywords']
+                            break
                     # for component in components:
                     #     if component['meaning'] == meaning_2:
                     #         meaning_2_keywords = component['keywords']
@@ -151,6 +153,7 @@ class Invoice:
                 for component in components:
                     if component['meaning'] == "TotalLineAmount":
                         line_total_keywords = component['keywords']
+                        break
                 for k in range(len(main_keyanno_list)):
                     key_anno = main_keyanno_list[k]
                     if key_anno['keyword'] in line_total_keywords:
@@ -205,38 +208,49 @@ class Invoice:
                 for line_id in range(key_line_pos + 1, len(lines)):
                     line = lines[line_id]['line']
 
-                    value_line = []
+                    value_line = [EMP] * len(main_keyanno_list)
                     start = 0
                     for k in range(0, len(main_keyanno_list)):
                         temp_str = EMP
-                        if k == 0:
+                        if k == 0:  # first annotation
                             for i in range(start, len(line)):
+                                if annos[line[i]]['used']: continue
                                 if manager.get_right_edge(annos[line[i]])[0] <= main_keyanno_list[k+1]['left'][0]:
                                     temp_str += annos[line[i]]['text'] + ' '
+                                    annos[line[i]]['used'] = True
                                 else:
                                     start = i
-                                    value_line.append(temp_str)
+                                    value_line[k] = temp_str
                                     break
-                        elif k != len(main_keyanno_list) - 1:
+                        elif k != len(main_keyanno_list) - 1:  # middle annotations
                             for i in range(start, len(line)):
+                                if annos[line[i]]['used']: continue
                                 if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and \
                                                 manager.get_right_edge(annos[line[i]])[0] < main_keyanno_list[k + 1]['left'][0]:
+                                    if manager.is_line_discount(annos[line[i]]):
+                                        line_discount = annos[line[i]]['text']
+                                        annos[line[i]]['used'] = True
+                                        continue
                                     if i != len(line) - 1 and manager.distance_anno2anno(left=annos[line[i]], right=annos[line[i + 1]]) < 3 * manager.get_height(annos[lines[key_line_pos]['line'][0]]):
                                         temp_str += annos[line[i]]['text'] + ' '
+                                        annos[line[i]]['used'] = True
                                     else:
                                         temp_str += annos[line[i]]['text'] + ' '
-                                        value_line.append(temp_str)
+                                        annos[line[i]]['used'] = True
+                                        value_line[k] = temp_str
                                         start = i + 1
                                         break
                                 else:
                                     start = i
-                                    value_line.append(temp_str)
+                                    value_line[k] = temp_str
                                     break
-                        elif k == len(main_keyanno_list) - 1:
+                        elif k == len(main_keyanno_list) - 1:  # last annotation
                             for i in range(start, len(line)):
+                                if annos[line[i]]['used']: continue
                                 if main_keyanno_list[k-1]['right'][0] < manager.get_left_edge(annos[line[i]])[0]:
                                     temp_str += annos[line[i]]['text'] + ' '
-                            value_line.append(temp_str)
+                                    annos[line[i]]['used'] = True
+                            value_line[k] = temp_str
 
                     num_emptys = value_line.count(EMP)
                     if len(value_line) - num_emptys > THRESH_MIN_LINE_KEYS:
@@ -246,7 +260,7 @@ class Invoice:
                                 value_line[mul_line_1st_item_ids[-1]] != EMP and value_line[line_total_id] != EMP:
                             value_lines.append(value_line)
                             continue
-                        elif num_emptys == len(value_line) - 1 and len(value_lines) > 0:
+                        elif num_emptys >= len(value_line) - 2 and len(value_lines) > 0:
                             for mul_line_1st_item_id in mul_line_1st_item_ids:
                                 if value_line[mul_line_1st_item_id] != EMP and value_lines[-1][mul_line_1st_item_id] != EMP:
                                     value_lines[-1][mul_line_1st_item_id] += SPLITER + value_line[mul_line_1st_item_id]
@@ -254,6 +268,8 @@ class Invoice:
                         elif lines[line_id]['pos'] - lines[key_line_pos]['pos'] < manager.get_height(anno=annos[lines[key_line_pos]['line'][0]]) * 3:
                             continue
                         else:
+                            for i in range(len(line)):
+                                if annos[line[i]]['used']: annos[line[i]]['used'] = False  # restore the wrong line
                             cnt_false_lines += 1
                             if cnt_false_lines > 2:
                                 break
@@ -265,9 +281,9 @@ class Invoice:
                 for value_line in value_lines:
                     # init the empty contrainer for result dict
                     filled_line = [EMP] * len(components)
-                    filled_line[0] = str(value_lines.index(value_line) + 1)  # line id = filled line index
+                    filled_line[0] = str(value_lines.index(value_line) + len(total_value_lines) + 1)  # line id = filled line index
 
-                    for i in range(len(components)):
+                    for i in range(1, len(components)):
                         component = components[i]
                         for k in range(len(main_keyanno_list)):
                             key_anno = main_keyanno_list[k]
@@ -289,12 +305,12 @@ class Invoice:
                                 continue
                             if filled_line[id1] != EMP:
                                 sps = filled_line[id1].split(SPLITER)
-                                if len(sps) == 2 and filled_line[id1] != EMP:
+                                if len(sps) >= 2 and filled_line[id1] != EMP:
                                     if id1 == id2:
                                         filled_line[id1] = sps[0] + " " + sps[1]
                                     if id1 != id2:
                                         filled_line[id1] = sps[0]
-                                        filled_line[id2] = sps[-1]
+                                        filled_line[id2] = sps[1]
 
                     filled_lines.append(filled_line)
 
@@ -385,7 +401,7 @@ class Invoice:
             log.log_print("\tunknown document type.\n")
             return template, {'error': "unknown document type."}
         else:
-            log.log_print("\t\ttemplate: {}.\n".format(template['prefix']['name']))
+            log.log_print("\t\ttemplate: {}\n".format(template['prefix']['name']))
             invoice_details = self.get_details_infos(template=template, contents=contents)
             invoice_tax = self.get_tax_infos(template=template, contents=contents)
             invoice_total = self.get_total_infos(template=template, contents=contents)
