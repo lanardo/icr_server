@@ -51,6 +51,8 @@ class Invoice:
                 line_text = line['text']
 
                 for component in components:
+                    ret_dict[component['meaning']] = EMP
+
                     for keyword in component['keywords']:
                         if keyword == EMP:
                             ret_dict[component['meaning']] = EMP

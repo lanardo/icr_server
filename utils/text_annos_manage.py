@@ -550,12 +550,12 @@ def get_val(annos, keyword, line_id, lines, info):
         value = upper_line_text
 
     else:
-        value = ""
+        value = EMP
 
     if len(value) >= max_len:
         return clear_value(value)
     else:
-        return ""
+        return EMP
 
 
 def get_height(anno):
