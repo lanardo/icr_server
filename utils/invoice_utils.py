@@ -41,6 +41,8 @@ class Invoice:
     def get_details_infos(self, template, contents):
         components = template['info']['InvoiceDetails']
         ret_dict = {}
+        for component in components:
+            ret_dict[component['meaning']] = EMP
 
         for content in contents:
             annos = content['annos']
@@ -51,8 +53,6 @@ class Invoice:
                 line_text = line['text']
 
                 for component in components:
-                    ret_dict[component['meaning']] = EMP
-
                     for keyword in component['keywords']:
                         if keyword == EMP:
                             ret_dict[component['meaning']] = EMP
@@ -130,6 +130,7 @@ class Invoice:
             # --- index of the "Description" item on the invoiceline components ------
             mul_line_1st_item_ids = []
             line_total_id = -1
+            line_discount_id = -1
             if len(main_keyanno_list) != -1:
                 ###################################################
                 # --- find the multi-line item's index ---
@@ -161,6 +162,11 @@ class Invoice:
                     if key_anno['keyword'] in line_total_keywords:
                         line_total_id = k
                         break
+
+                # --- find the discount keyword index in a line ---
+                for component in components:
+                    if component['meaning'] == "Discount":
+                        line_discount_id = components.index(component)  # index of filled line
                 ###################################################
 
                 if self.debug:
@@ -209,6 +215,7 @@ class Invoice:
                 cnt_false_lines = 0
                 for line_id in range(key_line_pos + 1, len(lines)):
                     line = lines[line_id]['line']
+                    line_discount_val = EMP
 
                     value_line = [EMP] * len(main_keyanno_list)
                     start = 0
@@ -227,17 +234,19 @@ class Invoice:
                         elif k != len(main_keyanno_list) - 1:  # middle annotations
                             for i in range(start, len(line)):
                                 if annos[line[i]]['used']: continue
-                                if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and \
-                                                manager.get_right_edge(annos[line[i]])[0] < main_keyanno_list[k + 1]['left'][0]:
-                                    if manager.is_line_discount(annos[line[i]]):
-                                        line_discount = annos[line[i]]['text']
-                                        annos[line[i]]['used'] = True
-                                        continue
+                                if main_keyanno_list[k - 1]['right'][0] <= manager.get_left_edge(annos[line[i]])[0] and\
+                                            manager.get_right_edge(annos[line[i]])[0] < main_keyanno_list[k + 1]['left'][0]:
+
                                     if i != len(line) - 1 and manager.distance_anno2anno(left=annos[line[i]], right=annos[line[i + 1]]) < 3 * manager.get_height(annos[lines[key_line_pos]['line'][0]]):
                                         temp_str += annos[line[i]]['text'] + ' '
                                         annos[line[i]]['used'] = True
                                     else:
                                         temp_str += annos[line[i]]['text'] + ' '
+                                        if manager.is_line_discount(temp_str):
+                                            line_discount_val = temp_str
+                                            temp_str = EMP
+                                            annos[line[i]]['used'] = True
+                                            continue
                                         annos[line[i]]['used'] = True
                                         value_line[k] = temp_str
                                         start = i + 1
@@ -256,10 +265,15 @@ class Invoice:
 
                     num_emptys = value_line.count(EMP)
                     if len(value_line) - num_emptys > THRESH_MIN_LINE_KEYS:
+                        if line_discount_id != -1:
+                            value_line.append(line_discount_val)
                         value_lines.append(value_line)
+
                     else:
                         if len(value_line) >= line_total_id + 1 and num_emptys == len(value_line) - 2 and \
                                 value_line[mul_line_1st_item_ids[-1]] != EMP and value_line[line_total_id] != EMP:
+                            if line_discount_id != -1:
+                                value_line.append(line_discount_val)
                             value_lines.append(value_line)
                             continue
                         elif num_emptys >= len(value_line) - 2 and len(value_lines) > 0:
@@ -292,6 +306,10 @@ class Invoice:
                             if key_anno['keyword'] in component['keywords']:
                                 filled_line[i] = value_line[k]
                                 break
+
+                        # last element of the value line is the discount percent
+                        if line_discount_id != -1 and len(value_line) == len(main_keyanno_list) + 1:
+                            filled_line[line_discount_id] = value_line[-1]
 
                     # fix the multi-line values
                     if len(multi_line_component_sets) != 0:

@@ -12,15 +12,16 @@ class Validate:
 
     def __validate_lines(self, template, product_lines):
         components = template['info']['InvoiceLines']['components']
-        idx_quantity, idx_price, idx_total = None, None, None
+        idx_quantity, idx_price, idx_total, idx_discount = None, None, None, None
         for component in components:
             if component['meaning'] == "Quantity":
                 idx_quantity = components.index(component)
             elif component['meaning'] == "Price":
                 idx_price = components.index(component)
+            elif component['meaning'] == "Discount":
+                idx_discount = components.index(component)
             elif component['meaning'] == "TotalLineAmount":
                 idx_total = components.index(component)
-
         if idx_quantity is None or idx_price is None or idx_total is None:
             return
 
@@ -30,29 +31,33 @@ class Validate:
         for value_list in product_lines:
             qua = manager.str2val(value_list[idx_quantity])
             price = manager.str2val(value_list[idx_price])
+            if idx_discount is None:
+                disc = 100
+            else:
+                disc = manager.str2val(value_list[idx_discount])
             total = manager.str2val(value_list[idx_total])
 
             try:
                 if qua == -1 and price != -1 and total != -1:
-                    qua = total / price
+                    qua = total / (price * disc / 100)
                     value_list[idx_quantity] = "{:.1f}".format(qua)
                 if qua != -1 and price == -1 and total != -1:
-                    price = total / qua
+                    price = total / (qua * disc / 100)
                     value_list[idx_price] = "{:.2f}".format(price)
                 if qua != -1 and price != -1 and total == -1:
-                    total = qua * price
+                    total = qua * (price * disc / 100)
                     value_list[idx_total] = "{:.2f}".format(total)
             except Exception as e:
                 if total != -1:
-                    price = total
+                    price = total * 100 / disc
                     qua = 1.0
                 elif price != -1:
-                    total = price * qua
+                    total = (price * disc / 100) * qua
                     qua = 1.0
                 else:
                     continue
 
-            if total == qua * price:
+            if total == qua * price * disc / 100:
                 true_pos += 1
                 v_total += total
 

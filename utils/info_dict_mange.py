@@ -83,8 +83,8 @@ class InfoDictManage:
                      ("Item name", EMP, False),
                      ("Item descrption", invoice_line[meanings.index("Description")], False),
                      ("Seller item ID", invoice_line[meanings.index("LineItemID")], False),
-                     ("Tax percent", MANDATORY, True),
-                     ("Item price", MANDATORY, True)]
+                     ("Tax percent", invoice_line[meanings.index("Discount")], True),
+                     ("Item price", invoice_line[meanings.index("Price")], True)]
                 )
             )
             lines.append((line_key, line_val, False))

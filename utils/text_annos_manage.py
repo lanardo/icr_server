@@ -50,12 +50,11 @@ def distance_anno2anno(left, right):
     return start_of_right - end_of_left
 
 
-def is_line_discount(anno):
+def is_line_discount(text):
     try:
-        text = anno['text']
         sps = text.split(PERCENT_MARK)
 
-        if len(sps) > 2 and __is_with_digit(sps[0]):
+        if len(sps) >= 2 and __is_with_digit(sps[0]):
             return True
         else:
             return False
