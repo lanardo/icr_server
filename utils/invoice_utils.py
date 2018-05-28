@@ -287,15 +287,14 @@ class Invoice:
 
                             if not id1 or not id2:
                                 continue
-                            if id1 == id2:
-                                continue
-                            elif id1 != id2:
+                            if filled_line[id1] != EMP:
                                 sps = filled_line[id1].split(SPLITER)
-                                if filled_line[id1] != EMP and filled_line[id2] == EMP and len(sps) == 2:
-                                    filled_line[id1] = sps[0]
-                                    filled_line[id2] = sps[-1]
-                            else:
-                                continue
+                                if len(sps) == 2 and filled_line[id1] != EMP:
+                                    if id1 == id2:
+                                        filled_line[id1] = sps[0] + " " + sps[1]
+                                    if id1 != id2:
+                                        filled_line[id1] = sps[0]
+                                        filled_line[id2] = sps[-1]
 
                     filled_lines.append(filled_line)
 

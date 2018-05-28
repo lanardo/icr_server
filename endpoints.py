@@ -97,7 +97,6 @@ def ocr_proc(src_file, debug=False):
 
     # ------------------ rearrnage the format and binary objects -----------------------------------------
     res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, contents=contents, template=template)
-    print(res_info)
     return res_info
 
 
@@ -152,5 +151,6 @@ if __name__ == '__main__':
     folder = "./data"
     paths = [folder + "/" + fn for fn in os.listdir(folder) if os.path.splitext(fn)[1].lower() == ".pdf"]
 
-    path = "./data/2124_91737293_101767523.pdf"
+    # path = "./data/20160406038001.TIF.PDF"  # bravida
+    path = "./data/2124_91737293_101767523.pdf"  # DAHL
     ocr_proc(path)

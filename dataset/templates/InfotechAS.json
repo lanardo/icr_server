@@ -53,7 +53,7 @@
 				"max_len": 10
 			},
 			{
-				"meaning": "Free Text",
+				"meaning": "FreeText",
 				"keywords": [
 					"Ant.", "Enhet"
 				],

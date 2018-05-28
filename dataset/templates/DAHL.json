@@ -1,0 +1,195 @@
+{
+	"type": "invoice",
+	"prefix": {
+		"id": "invoice3",
+		"fname": "DAHL.pdf",
+		"name": "DAHL",
+		"keywords": [
+			"DAHL","Dahl Svergie AB"
+		]
+	},
+	"info": {
+		"InvoiceDetails": [
+			{
+				"meaning": "InvoiceNumber",
+				"keywords": [
+					"Fakturanr"
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceIssueDate",
+				"keywords": [
+					"Fakturadatum"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "InvoiceDueDate",
+				"keywords": [
+					"Förfallodatum",
+					"Forfallodatum"
+				],
+				"orientation": "left",
+				"max_len": 8
+			},
+			{
+				"meaning": "TransactionID",
+				"keywords": [
+					"OCR"
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "PO Nnumber",
+				"keywords": [
+					"Ert order-/projektnr"
+				],
+				"orientation": "under",
+				"max_len": 5
+			},
+			{
+				"meaning": "InvoiceReference",
+				"keywords": [
+					"Er referens"
+				],
+				"orientation": "ext_under",
+				"max_len": 10
+			},
+			{
+				"meaning": "OrderNumber",
+				"keywords": [
+					""
+				],
+				"orientation": "left",
+				"max_len": 5
+			},
+			{
+				"meaning": "OrderReference",
+				"keywords": [
+					""
+				],
+				"orientation": "left",
+				"max_len": 10
+			},
+			{
+				"meaning": "FreeText",
+				"keywords": [
+					"Leveransvillkor"
+				],
+				"orientation": "under",
+				"max_len": 10
+			}
+		],
+		"InvoiceLines": {
+			"type": "dict",
+			"orientation": "under",
+			"multi_lines": [["LineItemID", "Description"]],
+			"components": [
+				{
+					"meaning": "LineID",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning": "LineItemID",
+					"keywords": [
+						"Artikelnr", "Artikelnr Benämning"
+					],
+					"multi_line_idx": 1
+				},
+				{
+					"meaning": "Description",
+					"keywords": [
+						""
+					],
+					"multi_line_idx": 2
+				},
+				{
+					"meaning": "Quantity",
+					"keywords": [
+						"Antal"
+					]
+				},
+				{
+					"meaning": "Unit",
+					"keywords": [
+						"Enhet"
+					]
+				},
+				{
+					"meaning": "Price",
+					"keywords": [
+						"Listpris"
+					]
+				},
+				{
+					"meaning": "Discount",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning": "TotalLineAmount",
+					"keywords": [
+						"Belopp"
+					]
+				}
+			]
+		},
+		"TotalTAXs": {
+			"type": "dict",
+			"orientation": "under",
+			"components": [
+				{
+					"meaning": "TaxValue",
+					"keywords": [
+						"Moms"
+					]
+				},
+				{
+					"meaning": "TaxType",
+					"keywords": [
+						"Moms %"
+					],
+					"description": [
+						"25.00%",
+						"15.00%",
+						"10.00%"
+					]
+				}
+			]
+		},
+		"Totals": {
+			"type": "dict",
+			"orientation": "left",
+			"components": [
+				{
+					"meaning": "TotalExclusiveTAX",
+					"keywords": [
+						"Varuvärde", "Summa Ordertotal"
+					]
+				},
+				{
+					"meaning": "Rounding",
+					"keywords": [
+                        "Avrundning"
+					]
+				},
+				{
+					"meaning": "TotalInclusiveTAX",
+					"keywords": [
+						"Att betala", 	"Att betala SEK"
+					]
+				}
+			]
+		}
+
+
+
+	}
+}
