@@ -152,7 +152,8 @@ class Validate:
         # first check the tax_type and tax_value
         if tax_type in [25, 15, 10]:
             if self.__equantl(total_inc, total_exc * (tax_type + 100) / 100):
-                tax_val = total_exc * tax_type / 100
+                if not self.__equantl(tax_val, total_exc * tax_type / 100):
+                    tax_val = total_exc * tax_type / 100
         else:
             if self.__equantl(total_inc, total_exc + tax_val):
                 tax_type = tax_val * 100 / total_exc
