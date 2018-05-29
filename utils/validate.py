@@ -12,7 +12,7 @@ class Validate:
 
     def __validate_lines(self, template, product_lines):
         components = template['info']['InvoiceLines']['components']
-        idx_quantity, idx_price, idx_total, idx_discount = None, None, None, None
+        idx_quantity, idx_price, idx_total, idx_discount, idx_fee = None, None, None, None, None
         for component in components:
             if component['meaning'] == "Quantity":
                 idx_quantity = components.index(component)
@@ -20,53 +20,81 @@ class Validate:
                 idx_price = components.index(component)
             elif component['meaning'] == "Discount":
                 idx_discount = components.index(component)
+            elif component['meaning'] == "Fee":
+                idx_fee = components.index(component)
             elif component['meaning'] == "TotalLineAmount":
                 idx_total = components.index(component)
+
         if idx_quantity is None or idx_price is None or idx_total is None:
             return
 
-        v_total = 0
-        true_pos = 0
-        v_lines = []
+        sum_of_total = 0  # here meaning : total = quan x price x (1-disc)
+        sum_of_disc = 0
+        sum_of_fees = 0
+        true_cnt = 0
+        validated_lines = []
         for value_list in product_lines:
-            qua = manager.str2val(value_list[idx_quantity])
-            price = manager.str2val(value_list[idx_price])
             if idx_discount is None:
                 disc = 100
             else:
                 disc = manager.str2val(value_list[idx_discount])
+            if idx_fee is None:
+                fee = 0.0
+            else:
+                fee = manager.str2val(value_list[idx_fee])
+
             total = manager.str2val(value_list[idx_total])
+            quant = manager.str2val(value_list[idx_quantity])
+            price = manager.str2val(value_list[idx_price])
 
             try:
-                if qua == -1 and price != -1 and total != -1:
-                    qua = total / (price * disc / 100)
-                    value_list[idx_quantity] = "{:.1f}".format(qua)
-                if qua != -1 and price == -1 and total != -1:
-                    price = total / (qua * disc / 100)
+                if quant == -1 and price != -1 and total != -1:
+                    quant = total / (price * (100-disc) / 100)
+                    value_list[idx_quantity] = "{:.1f}".format(quant)
+                if quant != -1 and price == -1 and total != -1:
+                    price = total / (quant * (100-disc) / 100)
                     value_list[idx_price] = "{:.2f}".format(price)
-                if qua != -1 and price != -1 and total == -1:
-                    total = qua * (price * disc / 100)
+                if quant != -1 and price != -1 and total == -1:
+                    total = quant * (price * (100-disc) / 100)
                     value_list[idx_total] = "{:.2f}".format(total)
             except Exception as e:
                 if total != -1:
-                    price = total * 100 / disc
-                    qua = 1.0
+                    price = total * 100 / (100-disc)
+                    quant = 1.0
                 elif price != -1:
-                    total = (price * disc / 100) * qua
-                    qua = 1.0
+                    total = (price * (100-disc) / 100) * quant
+                    quant = 1.0
                 else:
                     continue
 
-            if total == qua * price * disc / 100:
-                true_pos += 1
-                v_total += total
+            if self.__equantl(total, quant * price * (100-disc) / 100):
+                true_cnt += 1
+                sum_of_total += total
+                sum_of_disc += quant * price * disc / 100
+                sum_of_fees += fee
 
-            v_lines.append(value_list)
+            validated_lines.append(value_list)
 
-        if true_pos != len(product_lines):
-            v_total = -1
+        if true_cnt == len(product_lines):
+            validated = True
+            lineTotal = sum_of_total + sum_of_disc - sum_of_fees
+            sumOfDisc = sum_of_disc
+            sumOfFees = sum_of_fees
+            lines = validated_lines
+        else:
+            validated = False
+            lineTotal = -1
+            sumOfDisc = -1
+            sumOfFees = -1
+            lines = product_lines
 
-        return v_lines, v_total
+        return {
+            'validated': validated,
+            'lineTotal': lineTotal,
+            'sumOfDisc': sumOfDisc,
+            'sumOfFees': sumOfFees,
+            'lines': lines
+        }
 
     def __validate_tax(self, template, tax):
         components = template['info']['TotalTAXs']['components']
@@ -88,13 +116,14 @@ class Validate:
 
         return v_tax
 
-    def __equal(self, value1, value2):
+    def __equantl(self, value1, value2):
         return math.fabs(value1 - value2) <= 1.0
 
-    def __validate_total(self, total, line_total, v_tax):
+    def __validate_total(self, total, v_lines, v_tax):
         rounding = manager.str2val(total['Rounding'])
         total_inc = manager.str2val(total['TotalInclusiveTAX'])
         total_exc = manager.str2val(total['TotalExclusiveTAX'])
+
         tax_val, tax_type = v_tax['TaxValue'], v_tax['TaxType']
 
         """ validteing Rule
@@ -106,54 +135,66 @@ class Validate:
             # tax_val = total_exc * tax_type / 100
             # v_total = total_exc
         """
+        # from validated_lines
+        if v_lines['validated']:
+            total_exc = v_lines['lineTotal'] + v_lines['sumOfFees'] - v_lines['sumOfDisc']
+            if tax_type in [25, 15, 10]:
+                tax_val = (tax_type / 100) * total_exc
+            else:
+                tax_type = (tax_val * 100) / total_exc
 
-        if self.__equal(total_inc, total_exc + tax_val):
-            tax_type = tax_val * 100 / total_exc
+            if rounding == total_inc - round(total_inc) and total_exc * 2 > total_inc > total_exc:
+                tax_val = total_inc - total_exc
+                tax_type = tax_val * 100 / total_exc
 
-        elif self.__equal(total_inc, total_exc * (tax_type + 100) / 100):
-            tax_val = total_exc * tax_type / 100
-
-        elif self.__equal(total_exc * tax_type / 100, tax_val):
             total_inc = total_exc + tax_val
 
-        elif self.__equal(total_inc, line_total + tax_val):
-            total_exc = line_total
-            tax_type = tax_val * 100 / total_exc
+        # first check the tax_type and tax_value
+        if tax_type in [25, 15, 10]:
+            if self.__equantl(total_inc, total_exc * (tax_type + 100) / 100):
+                tax_val = total_exc * tax_type / 100
+        else:
+            if self.__equantl(total_inc, total_exc + tax_val):
+                tax_type = tax_val * 100 / total_exc
 
-        elif self.__equal(line_total * tax_type / 100, tax_val):
-            total_exc = line_total
-            total_inc = round(total_exc + tax_val)
+        # check the total_inc and total_exc
+        if self.__equantl(total_exc * tax_type / 100, tax_val):
+            total_inc = total_exc + tax_val
 
-        elif rounding == total_inc - round(total_inc) and \
-                total_exc * 2 > total_inc > total_exc and total_exc == line_total:
-            tax_val = total_inc - total_exc
-            tax_type = tax_val * 100 / total_exc
+        # validate
+        ret = True
+        if self.__equantl(total_inc, total_exc + tax_val) and \
+                self.__equantl(tax_val, total_exc * tax_type / 100):
 
-        if self.__equal(total_inc, total_exc + tax_val) and self.__equal(tax_val, total_exc * tax_type / 100):
             rounding = round(total_inc) - (total_exc + tax_val)
             total_inc = round(total_exc + tax_val + rounding)
             tax_type = int(round(tax_type))
+            ret = False
 
-            v_tax = {'TaxValue': round(tax_val, 2), 'TaxType': round(tax_type, 0)}
-            v_total = {'Rounding': round(rounding, 2),
-                       'TotalInclusiveTAX': round(total_inc, 2),
-                       'TotalExclusiveTAX': round(total_exc, 2)}
-            return True, v_tax, v_total
-        else:
-            return False, v_tax, total
+        v_tax = {'TaxValue': round(tax_val, 2), 'TaxType': round(tax_type, 0)}
+        v_total = {'Rounding': round(rounding, 2),
+                   'TotalInclusiveTAX': round(total_inc, 2),
+                   'TotalExclusiveTAX': round(total_exc, 2),
+
+                   'LineExtensionAmount': round(v_lines['lineTotal'], 2),
+                   'SumOfDiscount': round(v_lines['sumOfDisc'], 2),
+                   'SumOfFees': round(v_lines['sumOfFees'], 2)
+                   }
+
+        return ret, v_tax, v_total, v_lines['lines']
 
     def validate(self, template, invoice_info):
         lines = invoice_info['invoice_lines']
         total = invoice_info['invoice_total']
         tax = invoice_info['invoice_tax']
 
-        v_lines, line_total = self.__validate_lines(template=template, product_lines=lines)
+        v_lines = self.__validate_lines(template=template, product_lines=lines)
         v_tax = self.__validate_tax(template=template, tax=tax)
 
-        suc, v_tax, v_total = self.__validate_total(total=total, line_total=line_total, v_tax=v_tax)
+        suc, v_tax, v_total, product_lines = self.__validate_total(total=total, v_lines=v_lines, v_tax=v_tax)
 
         validated_info = copy.deepcopy(invoice_info)
-        validated_info['invoice_lines'] = v_lines
+        validated_info['invoice_lines'] = product_lines
         validated_info['invoice_tax'] = v_tax
         validated_info['invoice_total'] = v_total
         validated_info['validated'] = suc

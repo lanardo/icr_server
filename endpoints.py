@@ -11,6 +11,7 @@ from utils.pre_proc import PreProc
 from utils.validate import Validate
 from utils.vision_utils import VisionUtils
 from utils.info_dict_mange import InfoDictManage
+from utils.binary_object import img2binary
 import logger as log
 
 from utils.settings import MACHINE
@@ -26,6 +27,23 @@ vis = VisionUtils(debug=False)
 pre = PreProc(debug=False)
 inv = Invoice(debug=False)
 validater = Validate()
+
+
+def binary_code_proc(src_file):
+    if not os.path.exists(src_file):
+        log.log_print("\t no exist such file! {}\n".format(src_file))
+        sys.exit(1)
+
+    # ------------------ convert pdf to page images ----------------------------------------------------
+    log.log_print("\n\t==={}".format(src_file))
+
+    log.log_print("\tpdf to imgs...")
+    page_img_paths = pdf.doc2imgs(doc_path=src_file)
+
+    binary_objs = []
+    for path in page_img_paths:
+        binary_objs.append(img2binary(image=cv2.imread(path)))
+    return {"binary_object": binary_objs}
 
 
 def ocr_proc(src_file, debug=False):
@@ -96,7 +114,7 @@ def ocr_proc(src_file, debug=False):
             save_temp_images(content=content)
 
     # ------------------ rearrnage the format and binary objects -----------------------------------------
-    res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, contents=contents, template=template)
+    res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, contents=contents, template=template, flag_binary=False)
     return res_info
 
 

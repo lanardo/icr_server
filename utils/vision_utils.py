@@ -185,6 +185,7 @@ class VisionUtils:
 
             if img is None:
                 log.log_print("\t not readable pdf format")
+                sys.exit(0)
 
             if self.debug:
                 log.log_print("\t send request" + path)
