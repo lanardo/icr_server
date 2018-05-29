@@ -139,9 +139,10 @@ class Validate:
         if v_lines['validated']:
             total_exc = v_lines['lineTotal'] + v_lines['sumOfFees'] - v_lines['sumOfDisc']
             if tax_type in [25, 15, 10]:
-                tax_val = (tax_type / 100) * total_exc
+                if not self.__equantl(tax_val, (tax_type / 100) * total_exc):
+                    tax_val = (tax_type / 100) * total_exc
             else:
-                tax_type = (tax_val * 100) / total_exc
+                tax_type = round((tax_val * 100) / total_exc, 0)
 
             if rounding == total_inc - round(total_inc) and total_exc * 2 > total_inc > total_exc:
                 tax_val = total_inc - total_exc
