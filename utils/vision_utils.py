@@ -182,6 +182,7 @@ class VisionUtils:
     def detect_text(self, path, idx, proc_queue):
         try:
             img = load_image(path)
+            img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
 
             if img is None:
                 log.log_print("\t not readable pdf format")
