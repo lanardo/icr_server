@@ -104,6 +104,9 @@ def ocr_proc(src_file, debug=False):
 
     template, raw_info = inv.parse_invoice(contents=contents)
 
+    if template is None:
+        return raw_info
+
     # ------------------ validate the parsed the info dict -----------------------------------------------
     validated_info = Validate().validate(template=template, invoice_info=raw_info)
 
