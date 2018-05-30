@@ -9,7 +9,7 @@ class InfoDictManage:
     def __init__(self):
         self.info_dict = {}
 
-    def reformat_info_dict(self, validated_info, contents, template, flag_binary):
+    def reformat_info_dict(self, validated_info, template, binary=None):
         company = validated_info['company']
         invoice_details = validated_info['invoice_details']
         invoice_lines = validated_info['invoice_lines']
@@ -27,12 +27,11 @@ class InfoDictManage:
         self.__parent("Contract document reference", [("ID", EMP, False),
                                                       ("Document type", EMP, False)])
 
-        if flag_binary:
-            binary_objs = []
-            for content in contents:
-                binary_objs.append(img2binary(image=content['image']))
+        if binary is not None:
+            binary_objs = binary
         else:
             binary_objs = EMP
+
         self.__parent(key="Attachments", val=[("Binary object", binary_objs, False)])  # MANDATORY
 
         self.__parent("Delivery details", [("Date", EMP, False),
