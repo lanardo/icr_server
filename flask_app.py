@@ -62,6 +62,8 @@ def binary():
             log.log_print("\n>>>finished")
 
             # return the result dict as a json file -----------------------------------------------
+            # finally: writing the json string to disk
+            #     note the 'w' flag, no 'b' needed as we deal with text here
             result_fn = os.path.splitext(doc_fn)[0] + "_binary" + ".json"
             result_path = os.path.join(UPLOAD_DIR, result_fn)
             with open(result_path, 'w') as fp:

@@ -11,7 +11,7 @@ from utils.pre_proc import PreProc
 from utils.validate import Validate
 from utils.vision_utils import VisionUtils
 from utils.info_dict_mange import InfoDictManage
-from utils.binary_object import img2binary
+from utils.binary_object import img2binary, pdf2binary
 import logger as log
 
 from utils.settings import MACHINE
@@ -38,12 +38,10 @@ def binary_code_proc(src_file):
     log.log_print("\n\t==={}".format(src_file))
 
     log.log_print("\tpdf to imgs...")
-    page_img_paths = pdf.doc2imgs(doc_path=src_file)
 
-    binary_objs = []
-    for path in page_img_paths:
-        binary_objs.append(img2binary(image=cv2.imread(path)))
-    return {"binary_object": binary_objs}
+    binary_string = pdf2binary(pdf_path=src_file)
+
+    return {"binary_object": binary_string}
 
 
 def ocr_proc(src_file, debug=False):
@@ -173,6 +171,8 @@ if __name__ == '__main__':
     paths = [folder + "/" + fn for fn in os.listdir(folder) if os.path.splitext(fn)[1].lower() == ".pdf"]
 
     # path = "./data/20160406038001.TIF.PDF"  # bravida
-    path = "./data/2124_91737293_101767523.pdf"  # DAHL
-    img = cv2.imread("./data/2124_91737293_101767523-1.jpg")
-    ocr_proc(path)
+    # path = "./data/2124_91737293_101767523.pdf"
+    path = "./data/1553_61697239_101596747.pdf"
+    # ocr_proc(path)
+    print(binary_code_proc(path))
+

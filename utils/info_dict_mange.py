@@ -1,7 +1,4 @@
-import json
-import cv2
-import base64
-from utils.binary_object import img2binary
+from utils.binary_object import img2binary, pdf2binary
 
 EMP = ""
 MANDATORY = "MAN"
