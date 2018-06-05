@@ -15,20 +15,21 @@ class InfoDictManage:
         if mandatory is False:
             if value == EMP:
                 pass
-            elif type(value) == dict:
-                is_empty_dict = False
-                for sub_val in value.values():
-                    if sub_val != EMP:
-                        is_empty_dict = True
-                        break
-                if is_empty_dict:
-                    pass
+            else:
+                if type(value) == dict:
+                    is_empty_dict = True
+                    for sub_val in value.values():
+                        if sub_val != EMP:
+                            is_empty_dict = False
+                            break
+                    if is_empty_dict:
+                        pass
+                    else:
+                        parent[key] = value
                 else:
                     parent[key] = value
 
     def reformat_info_dict(self, validated_info, template, binary=EMP):
-        info_dict = {}
-
         company = validated_info['company']
         invoice_details = validated_info['invoice_details']
         invoice_lines = validated_info['invoice_lines']
@@ -110,10 +111,14 @@ class InfoDictManage:
 
         # ==========================================================================================================
         attachments = {}
-        self.append(attachments, "Binary code", binary, mandatory=True)
+        if binary is not None:
+            self.append(attachments, "Binary code", binary, mandatory=True)
 
         # ==========================================================================================================
         # ==========================================================================================================
+        info_dict = {}
+        self.append(parent=info_dict, key="Validator", value="No Errors" * validated_info['validated'], mandatory=True)
+        self.append(parent=info_dict, key="Invoice rows", value=len(invoice_lines))
         self.append(parent=info_dict, key="Payment details", value=payment_details)
         self.append(parent=info_dict, key="Invoice totals", value=totals)
         self.append(parent=info_dict, key="Invoice line", value=lines)

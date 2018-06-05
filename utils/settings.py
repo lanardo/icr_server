@@ -1,4 +1,4 @@
-ALLOWED_EXT = [".pdf"]
+ALLOWED_EXT = [".pdf", ".jpg"]
 
 # predefined the location for saving the uploaded files
 UPLOAD_DIR = 'data/'

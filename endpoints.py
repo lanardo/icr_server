@@ -53,8 +53,12 @@ def ocr_proc(src_file, debug=False):
     # ------------------ convert pdf to page images ----------------------------------------------------
     log.log_print("\n\t==={}".format(src_file))
 
-    log.log_print("\tpdf to imgs...")
-    page_img_paths = pdf.doc2imgs(doc_path=src_file)
+    if os.path.splitext(src_file)[1].upper() == ".PDF":
+        log.log_print("\tpdf to imgs...")
+        page_img_paths = pdf.doc2imgs(doc_path=src_file)
+
+    elif os.path.splitext(src_file)[1].upper() == ".JPG":
+        page_img_paths = [src_file]
 
     binary_string = pdf2binary(pdf_path=src_file)
 
@@ -175,6 +179,6 @@ if __name__ == '__main__':
     # path = "./data/20160406038001.TIF.PDF"  # bravida
     # path = "./data/2124_91737293_101767523.pdf"
     path = "./data/1553_61697239_101596747.pdf"
-    # ocr_proc(path)
-    print(binary_code_proc(path))
+    ocr_proc(path)
+    # print(binary_code_proc(path))
 
