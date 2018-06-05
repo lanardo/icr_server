@@ -56,7 +56,7 @@ def ocr_proc(src_file, debug=False):
     log.log_print("\tpdf to imgs...")
     page_img_paths = pdf.doc2imgs(doc_path=src_file)
 
-    binary_obj = pdf2binary(pdf_path=src_file)
+    binary_string = pdf2binary(pdf_path=src_file)
 
     # ------------------ imges to pdf ------------------------------------------------------------------
     log.log_print("\tgoogle vision api...")
@@ -117,7 +117,7 @@ def ocr_proc(src_file, debug=False):
             save_temp_images(content=content)
 
     # ------------------ rearrnage the format and binary objects -----------------------------------------
-    res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, template=template, binary=None)
+    res_info = InfoDictManage().reformat_info_dict(validated_info=validated_info, template=template, binary=binary_string)
     return res_info
 
 
