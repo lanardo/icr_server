@@ -3,6 +3,9 @@ from wand.image import Image as WandImage
 from wand.color import Color as WandColor
 from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 
+from io import BytesIO
+import skimage.io
+
 # CCITT GROUP 4
 # from PIL import PngImagePlugin, Image
 # from fpdf import FPDF
@@ -87,7 +90,10 @@ class PdfUtilsWin:
                 img_buffer = np.asarray(bytearray(wand_img.make_blob()), dtype=np.uint8)
 
             if img_buffer is not None:
-                cv_img = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
+                bytesio = BytesIO(img_buffer)
+                sk_img = skimage.io.imread(bytesio)
+                print(sk_img.shape)
+                cv_img = sk_img.copy()
 
             images.append(cv_img)
 

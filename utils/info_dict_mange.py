@@ -1,7 +1,6 @@
 from utils.binary_object import img2binary, pdf2binary
 
 EMP = ""
-MANDATORY = "MAN"
 
 
 class InfoDictManage:

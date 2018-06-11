@@ -1,20 +1,20 @@
 
 import os
+import queue as qu
 import sys
 import threading as thr
 
 import cv2
-import queue as qu
-from utils.settings import *
+
+import logger as log
+from utils.binary_object import pdf2binary
+from utils.info_dict_mange import InfoDictManage
 from utils.invoice_utils import Invoice
 from utils.pre_proc import PreProc
+from utils.settings import *
+from utils.settings import MACHINE
 from utils.validate import Validate
 from utils.vision_utils import VisionUtils
-from utils.info_dict_mange import InfoDictManage
-from utils.binary_object import img2binary, pdf2binary
-import logger as log
-
-from utils.settings import MACHINE
 if MACHINE == "EC2":
     from utils.pdf_utils_ubuntu import PdfUtilsUbuntu
     pdf = PdfUtilsUbuntu()
