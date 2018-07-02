@@ -1,8 +1,5 @@
-import copy
-import math
-import re
-from operator import itemgetter
 
+from utils.settings import *
 from utils.string_manage import similarity_word
 
 """
@@ -290,10 +287,6 @@ def bundle_to_lines(origin_annos):
 
         line.extend(__left_extends(id, annos)[:])
         line.extend(__right_extends(id, annos)[1:])
-
-        str_temp = ""
-        for anno_id in line:
-            str_temp += annos[anno_id]['text']
 
         idx = 0
         while idx < len(line):

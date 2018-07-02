@@ -1,6 +1,5 @@
-import difflib
-import math
-from fuzzywuzzy import fuzz
+from utils.settings import *
+
 
 diff = difflib.Differ()
 

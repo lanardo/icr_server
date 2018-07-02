@@ -1,5 +1,5 @@
-import cv2
-import base64
+from utils.settings import *
+
 
 MAX_WIDTH = 500
 ENCODING = 'utf-8'

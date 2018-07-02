@@ -1,20 +1,8 @@
-import os
 from wand.image import Image as WandImage
 from wand.color import Color as WandColor
 from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 
-from io import BytesIO
-import skimage.io
-
-# CCITT GROUP 4
-# from PIL import PngImagePlugin, Image
-# from fpdf import FPDF
-from PIL import Image
-import io
-import sys
-import numpy as np
-import cv2
-
+from utils.settings import *
 import logger as log
 
 
@@ -85,7 +73,7 @@ class PdfUtilsWin:
             with WandImage(file=pdf_bytes, resolution=self.resolution) as wand_img:
                 # convert wand image to ndarray cv
                 wand_img.background_color = WandColor('white')
-                wand_img.format = 'tif'
+                wand_img.format = 'bmp'
                 wand_img.alpha_channel = False
                 img_buffer = np.asarray(bytearray(wand_img.make_blob()), dtype=np.uint8)
 

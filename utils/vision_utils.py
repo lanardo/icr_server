@@ -1,15 +1,6 @@
-import cv2
-import base64
-import json
-import requests
-import sys
-import numpy as np
-from PIL import Image, ExifTags
+
 import logger as log
-if sys.version_info[0] == 3:  # python 3x
-    import queue as qu
-if sys.version_info[0] == 2:  # python 2x
-    import Queue as qu
+from utils.settings import *
 
 
 ORIENTATION_270_DEGREE = 0

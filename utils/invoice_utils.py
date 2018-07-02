@@ -1,12 +1,9 @@
-import copy
-
-import cv2
-
 import logger as log
 import utils.string_manage as stringer
 import utils.text_annos_manage as manager
 from utils.template import Template
 from utils.validate import Validate
+from utils.settings import *
 
 
 EMP = ""

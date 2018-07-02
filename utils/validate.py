@@ -1,6 +1,4 @@
-import copy
-import math
-
+from utils.settings import *
 import utils.text_annos_manage as manager
 
 EMP = ""

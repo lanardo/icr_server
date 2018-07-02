@@ -1,6 +1,4 @@
-import sys
-import os
-import cv2
+from utils.settings import *
 import logger as log
 
 
