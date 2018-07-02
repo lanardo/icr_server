@@ -2,11 +2,12 @@ import base64
 import json
 import os
 
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify
 from werkzeug.utils import secure_filename
 from utils.settings import *
 
 import endpoints
+from utils.s3_bucket_utils import upload_to_S3, download_from_S3
 import logger as log
 
 app = Flask(__name__)
@@ -122,56 +123,55 @@ def submit():
             return error_str
 
 
-@app.route('/trigger', methods=['POST'])
-def submit():
-    content = request.json
+@app.route('/api/trigger/<uuid>', methods=['POST'])
+def trigger(uuid):
+    try:
+        content = request.json
 
-    bucket = content['bucket_name']
-    path = content['path']
+        bucket = content['bucket']
+        path = content['path']
+        fname = path.split('/')[-1]
+        log.log_print("\t post request uuid: {}\n".format(uuid))
+        log.log_print("\t bucket: {}, \n path: {}, \n fname: {}\n".format(bucket, path, fname))
 
-    print(bucket, path)
+        # upload the file to the server -------------------------------------------------------
+        download_path = os.path.join(UPLOAD_DIR, fname)
+        log.log_print("\t>>>download from s3 -> {}".format(download_path))
 
-    # file = request.files['file']
-    # doc_fn = secure_filename(file.filename)
-    #
-    #     if not (file and allowed_file(file.filename)):
-    #         str = "\tnot allowed file format {}.".format(doc_fn)
-    #         log.log_print(str)
-    #         return str
-    #     try:
-    #         # upload the file to the server -------------------------------------------------------
-    #         log.log_print("\t>>>uploading invoice {}".format(file.filename))
-    #
-    #         # check its directory for uploading the requested file --------------------------------
-    #         if not os.path.isdir(UPLOAD_DIR):
-    #             os.mkdir(UPLOAD_DIR)
-    #
-    #         # remove all the previous processed document file -------------------------------------
-    #         for fname in os.listdir(UPLOAD_DIR):
-    #             path = os.path.join(UPLOAD_DIR, fname)
-    #             if os.path.isfile(path):
-    #                 os.remove(path)
-    #
-    #         # save the uploaded document on UPLOAD_DIR --------------------------------------------
-    #         file.save(os.path.join(UPLOAD_DIR, doc_fn))
-    #
-    #         # ocr progress with the uploaded files ------------------------------------------------
-    #         log.log_print("\tparse the invoice [{}]".format(doc_fn))
-    #         src_fpath = os.path.join(UPLOAD_DIR, doc_fn)
-    #         invoice_info = endpoints.ocr_proc(src_file=src_fpath)
-    #         log.log_print("\n>>>finished")
-    #
-    #         # return the result dict as a json file -----------------------------------------------
-    #         result_fn = os.path.splitext(doc_fn)[0] + ".json"
-    #         result_path = os.path.join(UPLOAD_DIR, result_fn)
-    #         with open(result_path, 'w') as fp:
-    #             json.dump(invoice_info, fp, ensure_ascii=False)
-    #         return send_file(result_path, as_attachment=True)
-    #
-    #     except Exception as e:
-    #         error_str = '\tException: {}'.format(e)
-    #         log.log_print("\t exception :" + error_str)
-    #         return error_str
+        # check its directory for uploading the requested file --------------------------------
+        if not os.path.isdir(UPLOAD_DIR):
+            os.mkdir(UPLOAD_DIR)
+
+        # remove all the previous processed document file -------------------------------------
+        for fname in os.listdir(UPLOAD_DIR):
+            path = os.path.join(UPLOAD_DIR, fname)
+            if os.path.isfile(path):
+                os.remove(path)
+
+        # download from s3
+        download_from_S3(bucket=bucket, s3_path=path, local_path=download_path)
+
+        # ocr progress with the uploaded files ------------------------------------------------
+        log.log_print("\tparse the invoice [{}]".format(fname))
+        invoice_info = endpoints.ocr_proc(src_file=download_path)
+        log.log_print("\n>>>finished")
+
+        # upload to the S3 bucket -------------------------------------------------------------
+        result_fn = os.path.splitext(fname)[0] + ".json"
+        result_path = os.path.join(UPLOAD_DIR, result_fn)
+        with open(result_path, 'w') as fp:
+            json.dump(invoice_info, fp, ensure_ascii=False)
+
+        log.log_print("\t>>>upload too s3 -> {}".format(result_path))
+        new_path = os.path.splitext(path)[0] + ".json"
+        upload_to_S3(bucket=DST_BUCKET, s3_path=new_path, local_path=result_path)
+
+        return jsonify({"response": "success"})
+
+    except Exception as e:
+        error_str = '\tException: {}'.format(e)
+        log.log_print("\t exception :" + error_str)
+        return jsonify({"error": error_str})
 
 
 if __name__ == '__main__':

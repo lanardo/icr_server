@@ -9,7 +9,7 @@ import json
 import base64
 import difflib
 import requests
-import skimage.io
+# import skimage.io
 import numpy as np
 import queue as qu
 
@@ -35,3 +35,6 @@ try:
     from utils.settings_local import *
 except Exception:
     pass
+
+
+DST_BUCKET = "icr.json-result"
