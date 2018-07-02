@@ -129,10 +129,10 @@ def trigger(uuid):
         content = request.json
 
         bucket = content['bucket']
-        path = content['path']
-        fname = path.split('/')[-1]
+        s3_path = content['path']
+        fname = s3_path.split('/')[-1]
         log.log_print("\t post request uuid: {}\n".format(uuid))
-        log.log_print("\t bucket: {}, \n path: {}, \n fname: {}\n".format(bucket, path, fname))
+        log.log_print("\t bucket: {}, \n s3_path: {}, \n fname: {}\n".format(bucket, s3_path, fname))
 
         # upload the file to the server -------------------------------------------------------
         download_path = os.path.join(UPLOAD_DIR, fname)
@@ -149,7 +149,7 @@ def trigger(uuid):
                 os.remove(path)
 
         # download from s3
-        download_from_S3(bucket=bucket, s3_path=path, local_path=download_path)
+        download_from_S3(bucket=bucket, s3_path=s3_path, local_path=download_path)
 
         # ocr progress with the uploaded files ------------------------------------------------
         log.log_print("\tparse the invoice [{}]".format(fname))
@@ -157,13 +157,13 @@ def trigger(uuid):
         log.log_print("\n>>>finished")
 
         # upload to the S3 bucket -------------------------------------------------------------
-        result_fn = os.path.splitext(fname)[0] + ".json"
+        result_fn = os.path.splitext(download_path)[0] + ".json"
         result_path = os.path.join(UPLOAD_DIR, result_fn)
         with open(result_path, 'w') as fp:
             json.dump(invoice_info, fp, ensure_ascii=False)
 
         log.log_print("\t>>>upload too s3 -> {}".format(result_path))
-        new_path = os.path.splitext(path)[0] + ".json"
+        new_path = os.path.splitext(s3_path)[0] + ".json"
         upload_to_S3(bucket=DST_BUCKET, s3_path=new_path, local_path=result_path)
 
         return jsonify({"response": "success"})

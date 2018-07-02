@@ -9,7 +9,6 @@ import json
 import base64
 import difflib
 import requests
-# import skimage.io
 import numpy as np
 import queue as qu
 

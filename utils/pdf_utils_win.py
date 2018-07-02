@@ -2,6 +2,11 @@ from wand.image import Image as WandImage
 from wand.color import Color as WandColor
 from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 
+from io import BytesIO
+import skimage.io
+from PIL import Image
+import io
+
 from utils.settings import *
 import logger as log
 
