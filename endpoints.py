@@ -173,12 +173,6 @@ def save_temp_images(content):
 
 
 if __name__ == '__main__':
-    folder = "./data"
-    paths = [folder + "/" + fn for fn in os.listdir(folder) if os.path.splitext(fn)[1].lower() == ".pdf"]
-
-    # path = "./data/20160406038001.TIF.PDF"  # bravida
-    # path = "./data/2124_91737293_101767523.pdf"
-    path = "./data/1553_61697239_101596747.pdf"
+    path = "./data/Faktura_3209.pdf"
     ocr_proc(path)
     # print(binary_code_proc(path))
-

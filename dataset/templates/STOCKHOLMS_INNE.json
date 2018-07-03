@@ -1,12 +1,13 @@
 {
 	"type": "invoice",
 	"prefix":{
-		"id": "invoice1",
-		"fname": "InfotechAS.pdf",
-		"name": "InfotechAS",
+		"id": "invoice4",
+		"fname": "Faktura_3209.pdf",
+		"name": "STOCKHOLMS-DISTRIKTS-INNE",
 		"keywords": [
-				"InfotechAS",
-				"faktura@infotech.no"
+				"Stockholms",
+				"stockholm@innebandy.se",
+				"INNEBANDYFÖRBUND"
 		]
 	},
 	"info": {
@@ -14,24 +15,23 @@
 			{
 				"meaning": "InvoiceNumber",
 				"keywords": [
-					"Fakturanummer",
-					"faktura nr."
+					"Fakturanr"
 				],
 				"orientation": "left",
-				"max_len": 5
+				"max_len": 4
 			},
 			{
 				"meaning": "InvoiceIssueDate",
 				"keywords": [
-					"Fakturadato"
+					"Fakturadatum"
 				],
-				"orientation": "left",
+				"orientation": "under",
 				"max_len": 8
 			},
 			{
 				"meaning": "InvoiceDueDate",
 				"keywords": [
-					"Forfallsdato", "Forfallsdata"
+					"Förfallodatum", "Forfallodatum"
 				],
 				"orientation": "left",
 				"max_len": 8
@@ -39,7 +39,7 @@
 			{
 				"meaning": "TransactionID",
 				"keywords": [
-					""
+					"Kundnr"
 				],
 				"orientation": "left",
 				"max_len": 5
@@ -55,7 +55,7 @@
 			{
 				"meaning": "InvoiceReference",
 				"keywords": [
-					"Deres ref."
+					"Vår referens"
 				],
 				"orientation": "left",
 				"max_len": 10
@@ -79,7 +79,7 @@
 			{
 				"meaning": "FreeText",
 				"keywords": [
-					"Ant.", "Enhet"
+					""
 				],
 				"orientation": "ext_upper",
 				"max_len": 10
@@ -96,10 +96,22 @@
 					]
 				},
 				{
-					"meaning" : "Quantity",
+					"meaning": "LineItemID",
 					"keywords": [
-							"Ant."
-						]
+						"Artnr"
+					]
+				},
+				{
+					"meaning": "Description",
+					"keywords": [
+						"Benämning"
+					]
+				},
+				{
+					"meaning": "Quantity",
+					"keywords": [
+						"Lev ant Enhet"
+					]
 				},
 				{
 					"meaning": "Unit",
@@ -108,13 +120,19 @@
 					]
 				},
 				{
-					"meaning": "Description",
+					"meaning": "Price",
 					"keywords": [
-						"Beskrivelse"
+						"A-pris"
 					]
 				},
 				{
-					"meaning": "Price",
+					"meaning": "Discount",
+					"keywords": [
+						""
+					]
+				},
+				{
+					"meaning": "DiscountPrice",
 					"keywords": [
 						""
 					]
@@ -122,43 +140,54 @@
 				{
 					"meaning": "TotalLineAmount",
 					"keywords": [
-						"Beløp", "Belop", "Belep"
+						"Summa"
 					]
 				}
 			]
 		},
 		"TotalTAXs": {
-			"type": "list",
-			"orientation": "left",
-			"components":[
+			"type": "dict",
+			"orientation": "under",
+			"components": [
 				{
-					"meaning": "25%",
+					"meaning": "TaxType",
 					"keywords": [
-						"+25% MVA"
+						"Moms %"
+					],
+					"description": [
+						"25.00%",
+						"15.00%",
+						"10.00%"
 					]
 				},
 				{
-					"meaning": "15%",
+					"meaning": "TaxValue",
 					"keywords": [
-						""
-					]
-				},
-				{
-					"meaning": "10%",
-					"keywords": [
-						""
+						"Moms"
 					]
 				}
 			]
 		},
 		"Totals": {
-			"type": "list",
-			"orientation": "left",
+			"type": "dict",
+			"orientation": "under",
 			"components": [
+				{
+					"meaning": "TotalExclusiveTAX",
+					"keywords": [
+						"Netto"
+					]
+				},
+				{
+					"meaning": "Rounding",
+					"keywords": [
+                        "Öresavr", "Oresavr"
+					]
+				},
 				{
 					"meaning": "TotalInclusiveTAX",
 					"keywords": [
-						"Sum NOK"
+						"ATT BETALA"
 					]
 				}
 			]

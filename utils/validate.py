@@ -109,8 +109,12 @@ class Validate:
                     break
 
         elif type == "dict" and orientation == "under":
-            v_tax['TaxValue'] = manager.str2val(tax['TaxValue'])
-            v_tax['TaxType'] = manager.str2val(tax['TaxType'])
+            if 'TaxValue' not in tax.keys() or 'TaxType' not in tax.keys():
+                v_tax['TaxValue'] = 0.0
+                v_tax['TaxType'] = 0.0
+            else:
+                v_tax['TaxValue'] = manager.str2val(tax['TaxValue'])
+                v_tax['TaxType'] = manager.str2val(tax['TaxType'])
 
         return v_tax
 

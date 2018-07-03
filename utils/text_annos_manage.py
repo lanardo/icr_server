@@ -417,9 +417,11 @@ def get_val(annos, keyword, line_id, lines, info):
                 else:
                     break
             end_key_width = left_of_key - right_of_key
-            if len(keyword) < 5:
+            if len(keyword) <= 5:
                 end_key_width *= 2.1
-            if end_dis < (val_width + end_key_width * 3) and len(val_str) > max_len:
+
+            _val_str = val_str.replace(' ', '')
+            if end_dis < (val_width + end_key_width * 3) and len(_val_str) >= max_len:
                 value = val_str
 
         if value == EMP:

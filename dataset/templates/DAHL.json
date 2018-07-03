@@ -85,7 +85,7 @@
 			}
 		],
 		"InvoiceLines": {
-			"type": "dict",
+			"type": "list",
 			"orientation": "under",
 			"multi_lines": [["LineItemID", "Description"]],
 			"components": [

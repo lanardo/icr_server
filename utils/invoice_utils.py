@@ -128,6 +128,7 @@ class Invoice:
             mul_line_1st_item_ids = []
             line_total_id = -1
             line_discount_id = -1
+            line_item_description_id = -1
             if len(main_keyanno_list) != -1:
                 ###################################################
                 # --- find the multi-line item's index ---
@@ -148,6 +149,17 @@ class Invoice:
                         if key_anno['keyword'] in meaning_1_keywords:
                             mul_line_1st_item_ids.append(k)
                             break
+                # --- find the description item's index ---
+                description_keywords = []
+                for component in components:
+                    if component['meaning'] == "Description":
+                        description_keywords = component['keywords']
+                        break
+                for k in range(len(main_keyanno_list)):
+                    key_anno = main_keyanno_list[k]
+                    if key_anno['keyword'] in description_keywords:
+                        line_item_description_id = k
+
                 # --- find the total keyword index in a line ---
                 line_total_keywords = []
                 for component in components:
@@ -272,6 +284,9 @@ class Invoice:
                             if line_discount_id != -1:
                                 value_line.append(line_discount_val)
                             value_lines.append(value_line)
+                            continue
+                        elif num_emptys == len(value_line) - 1 and value_line[line_item_description_id] != EMP and len(value_lines) > 0 and value_lines[-1][line_item_description_id] != EMP:
+                            value_lines[-1][line_item_description_id] += " " + value_line[line_item_description_id]
                             continue
                         elif num_emptys >= len(value_line) - 2 and len(value_lines) > 0:
                             for mul_line_1st_item_id in mul_line_1st_item_ids:
